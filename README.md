@@ -1,0 +1,250 @@
+<p align="center">
+  <img src="docs/banner.png" alt="bnhm.fun: party games for everyone's phone" width="720">
+</p>
+
+<p align="center">
+  <b>Party games for everyone's phone.</b><br>
+  Start a room, share the code, and everyone plays on their own phone. Put it on the TV too.
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#games">Games</a> ·
+  <a href="#themes">Themes</a> ·
+  <a href="#hosting-docker">Hosting</a> ·
+  <a href="#how-it-works">How it works</a>
+</p>
+
+---
+
+**bnhm.fun** is a self-hosted party-game app. One person starts a room and gets a 4-letter code. Everyone joins on their own phone with a name, an optional photo, and optionally guy or girl (used by the Guys and Girls cards). The game runs in real time across every phone and an optional TV screen. Phones buzz and go red when it's your turn to drink.
+
+Built with **Next.js 16**, **React 19**, **Tailwind CSS 4** and **Bun**. There's no database, no accounts and no tracking.
+
+## Highlights
+
+- **Room games with a TV screen:** Ring of Fire, Most Likely To and Hangman. Join with a code; open the TV / admin screen on a big display.
+- **Your phone knows when you drink:** a full-screen alert with the reason, confirmed with *Done*. The next card waits until everyone has drunk.
+- **Ring of Fire extras:** mates that chain, a question master, Jack rules with phone votes to scrap them, and host toggles for individual cards (e.g. no King's cup).
+- **Admin from any device:** each room gets a secure admin password, so you can unlock host controls on a TV or a second phone.
+- **12 games in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
+- **Rules for every game** at `/how-to-play`, linked from each game.
+- **9 themes:** Notebook, Clean, Sunset, Candy, Night, Casino, Chalkboard, Ocean and Arcade, with live previews.
+- **One-command hosting:** Docker, an optional Caddy proxy with automatic HTTPS, or an instant public link through a Cloudflare tunnel. Rate limits and security headers are built in.
+
+> The drinking games are for adults. Anyone can swap drinks for water or forfeits, and look after each other.
+
+## Quick start
+
+```bash
+bun install
+bun dev
+```
+
+Open <http://localhost:3000>. To play with friends on the same Wi-Fi, have them open the **Network** URL that `bun dev` prints (e.g. `http://192.168.1.20:3000`). `next.config.ts` adds this machine's LAN IPs to `allowedDevOrigins`; without that, Next's dev server blocks JavaScript for other devices and joining silently fails. If your IP changes, restart `bun dev`.
+
+To test several players on one computer, use separate tabs: each tab keeps its own player.
+
+| Command         | What it does                         |
+| --------------- | ------------------------------------ |
+| `bun dev`       | Dev server with hot reload           |
+| `bun run build` | Production build (standalone output) |
+| `bun run start` | Serve the production build           |
+| `bun run lint`  | ESLint                               |
+
+## Games
+
+Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), linked from its screen.
+
+### Room games: everyone on their own phone
+
+| Game               | Phones                                                                    | TV / admin panel                                                         |
+| ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Ring of Fire**   | Draw on your turn, read the rule, pick who drinks / your mate / your rule | Big card + rule, whose turn, sips per player, mates, rules, event log    |
+| **Most Likely To** | Secret vote for a player                                                  | Card, who's voted, results bar chart                                     |
+| **Hangman**        | Picker types the word; others guess on a keyboard                         | Stickman, word, missed letters, scores                                   |
+
+**Flow:**
+
+1. On the home page, pick a game and press **Start a room**. You're the host.
+2. Join your own room with a name and an optional photo. The photo is cropped and shrunk on your device to a 160 px JPEG before upload.
+3. Others enter the code on the home page, or open `/r/CODE`.
+4. Press **Open TV / admin** to open a popup to drag onto a TV, or open `/tv/CODE` on any screen. Anyone can watch; controls appear only on admin devices.
+5. **Admin on another device:** creating a room also creates an **admin password** (e.g. `k7mp-3xq9-hr2w`). It's shown to the host in the lobby and under Menu. On a TV or second device, open `/tv`, enter the code and password (or use **Admin login** on `/tv/CODE`), and that device gets host controls. Case, spaces and dashes don't matter when typing it.
+
+**Drinking alerts:** when a game says someone drinks, that player's phone shows a full-screen **Drink!** with the reason, and vibrates where supported. It stays until they tap **Done — I drank**. The next card (Ring of Fire) or prompt (Most Likely To) is blocked on the server until every pending drink is confirmed. Everyone sees who they're waiting on, the host has a **Stop waiting** override, and players who leave are cleared automatically.
+
+**Ring of Fire specifics:**
+
+- The drawer chooses on their phone: who drinks (2, 4, 7, 9, 10), everyone who drinks (5, 6), their mate (8), or a new rule (J). The host can choose for them from the admin panel.
+- **Mates / drinking partners:** pick one with an 8, or the host sets partners at any time (lobby, Menu, or Partners on the admin panel), one way or both ways. They chain: if Sam's mate is Jo and Jo's mate is Alex, then when Sam drinks, all three phones go off. You can't pick the same mate twice; if you're already paired with everyone, an 8 just passes.
+- **Question master:** has buttons on their phone to catch anyone who answers them.
+- **Rules (Jack):** the drawer either makes a new rule *or* calls a phone vote to scrap an existing one (majority yes removes it; the game waits for the vote). The host can remove any rule from their phone or the TV.
+- **Host controls:** remove rules, close a vote early, turn individual cards on or off (e.g. no King's cup), draw for someone, skip a turn, make anyone drink, remove players, reset.
+
+### Pass-the-phone games (`/party`)
+
+
+Every game uses a seeded shuffle, so the URL holds the whole game state: deck, cards drawn, guesses and players. **Copy game link** lets others follow along on their phones, and refreshing never loses your place. Adding player names is optional; with names, the game tracks whose turn it is.
+
+| Game                  | How to play                                                                                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ring of Fire**      | Draw a card and follow its rule (A Waterfall · 2 You · 3 Me · 4 Floor · 5 Guys · 6 Girls · 7 Heaven · 8 Mate · 9 Rhyme · 10 Categories · J Make a rule · Q Question master · K King's cup). Each card shows step-by-step instructions and an example. The 4th King drinks the cup. |
+| **Higher or Lower**   | Call the next card **higher**, **lower** or **equal** (Aces low). Miss and you drink one per card in your streak, then pass on. A tie only wins on an equal call, and a correct equal call lets you hand out 3. |
+| **Ride the Bus**      | Make four calls in a row: red/black → higher/lower → inside/outside → suit. A miss at step *n* means you drink *n* and start over. Each step explains what counts as a win, using the cards on the table. |
+| **Pyramid**           | Everyone is dealt 4 cards to memorise (2–9 players). Fifteen cards are flipped from the bottom row up. If you hold the same rank, you give out drinks equal to the row number (1–5). At the end, forget a card, drink one. |
+| **Beat the Dealer**   | Guess the rank of the dealer's next card. Right first time: the dealer drinks 4. Otherwise you're told higher or lower; right on the second go: the dealer drinks 2. Wrong again: you drink the gap. After 3 misses in a row, the deck passes. |
+| **Horse Race**        | Bet sips on a suit. Each card drawn moves that suit's Ace forward; track cards flip and knock horses back. Backers of the winner hand out double their bet, and everyone else drinks theirs. |
+| **Never Have I Ever** | Read the card. Anyone who has done it drinks. |
+| **Most Likely To**    | Everyone points on three. One sip per finger pointing at you. |
+| **Truth or Drink**    | Answer the question honestly, or drink to skip it. |
+| **Would You Rather**  | Everyone picks a side on three. The smaller side drinks; on a tie, everyone drinks. |
+
+The drinking games are for adults. Anyone can swap drinks for water or forfeits.
+
+### Card dealer (`/cards`)
+
+Enter player names (up to 10) and cards per hand, then **Deal**. You get:
+
+- a **table link** that shows every hand
+- a **private link** for each player, showing only their hand behind a *Reveal* button
+
+Anyone who opens the same link sees the same deal. Private links keep people honest at the table, but they aren't truly secret: the table link reveals every hand.
+
+## Themes
+
+The palette button in the bottom-right corner opens live previews of every theme. The choice is per device, remembered, and applied before the first paint, so there's no flash.
+
+| Theme | Look | Heading font |
+| --- | --- | --- |
+| **Notebook** (default) | Ruled paper and a red margin line | Caveat |
+| **Clean** | Minimal light grey, crisp | Geist |
+| **Sunset** | Warm peach-to-coral gradient, rounder corners | Pacifico |
+| **Candy** | Pastel bubbles, polka dots, pillowy corners, bouncy buttons; rounded body font too | Fredoka + Baloo 2 |
+| **Night** | Dark with neon pink and green; glowing headings | Fredoka |
+| **Casino** | Green felt with a vignette, cream and gold | Playfair Display |
+| **Chalkboard** | Dusty green board with chalk smudges and a wooden frame | Gochi Hand |
+| **Ocean** | Deep blue, teal glow, soft waves | Baloo 2 |
+| **Arcade** | Black grid, CRT scanlines, pixel headings, square corners, monospace body | VT323 + Geist Mono |
+
+**How it works:** each theme is one `[data-theme="…"]` block in `src/app/globals.css`. It sets colours (`paper`, `surface`, `ink`, `faint`, `miss`, `hit`, `card-back`), fonts (`--hand-font`, `--body-font`), corner radii (Tailwind's `--radius-*`), and a background (`--bg`). Optional flourishes such as glow and scanlines live in the same file. Theme fonts aren't preloaded, so they only download when someone picks that theme. Playing cards keep real card colours everywhere. To add a theme, add a CSS block and an entry in `src/lib/themes.ts`; the picker preview renders it automatically. Animations are cut for anyone with "reduce motion" turned on.
+
+## Hosting (Docker)
+
+All settings are optional. Copy `.env.example` to `.env` to change them.
+
+| Command                  | What you get                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `bun run docker:up`      | Production app on <http://localhost:3000> (or `PORT`)                           |
+| `bun run docker:proxy`   | The same, plus a Caddy reverse proxy on ports 80/443, with automatic HTTPS when `DOMAIN` is set |
+| `bun run docker:tunnel`  | Public `https://….trycloudflare.com` URL via Cloudflare; no domain, account or port-forwarding needed. Prints the URL |
+| `bun run docker:dev`     | Dev server with hot reload; your source is mounted into the container           |
+| `bun run docker:logs`    | Follow the app logs                                                              |
+| `bun run docker:down`    | Stop everything                                                                  |
+
+These wrap plain `docker compose` commands (see `package.json`).
+
+**Files**
+
+| File                      | Purpose                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `Dockerfile`              | Multi-stage build: Bun installs and builds, then Next's standalone server runs on `node:22-alpine` as a non-root user |
+| `docker-compose.yml`      | `app` service (health check, log rotation, restart policy) plus an optional `proxy` service (Caddy) |
+| `docker-compose.dev.yml`  | Hot-reload dev container                                                                     |
+| `docker/Caddyfile`        | Proxy config. The live-update stream (`/api/rooms/*/stream`) is never buffered or compressed |
+| `docker/Dockerfile.dev`   | Dev image                                                                                    |
+| `.env.example`            | `PORT`, `DOMAIN`, `ALLOWED_DEV_ORIGINS`                                                      |
+
+**Making it public: pick one**
+
+1. **Instant public link:** `bun run docker:tunnel` prints a `https://random-words.trycloudflare.com` URL that anyone can open. It's good for a party at someone else's house, and the URL changes each time. Quick tunnels buffer live streams, so the app automatically falls back to polling every 1.5 s. It's tested and works, just slightly less instant.
+2. **Your own domain via Cloudflare:** create a named tunnel in the Cloudflare dashboard and swap the `tunnel` service's command for `tunnel --no-autoupdate run --token <token>`. That gives a permanent URL with full live streaming.
+3. **Your own server:** see below.
+
+**Hosting on a server with HTTPS:** point a domain at the server, set `DOMAIN=games.example.com` in `.env`, and run `bun run docker:proxy`. Caddy fetches and renews certificates automatically. Ports 80 and 443 must be reachable.
+
+**Health check:** `GET /api/health` returns `{ ok, rooms, uptime }`. Docker uses it to mark the container healthy, and the proxy waits for it before starting.
+
+**Dev container and phones:** inside Docker, the dev server can't see your computer's Wi-Fi IP. Set `ALLOWED_DEV_ORIGINS=192.168.x.x` (your IP) in `.env` so phones can load it. The production image doesn't need this.
+
+**Built-in protection for public hosting** (in `src/lib/rooms/limits.ts`):
+
+| Limit | Value |
+| --- | --- |
+| Rooms created per IP | 15 per 10 min |
+| Joins per IP | 30 per 10 min |
+| Admin-password attempts per IP | 10 per 10 min, plus the per-room lockout |
+| Actions per IP | 240 per min |
+| Room lookups per IP | 60 per min (stops code scanning) |
+| Rooms in total | 500 |
+| Screens per room | 64 |
+| Request body | 200 KB |
+
+Security headers are set (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), and `X-Powered-By` is removed. Client IPs come from `CF-Connecting-IP` / `X-Forwarded-For`, so keep the app behind Caddy or the tunnel rather than exposing port 3000 directly.
+
+> **Run exactly one `app` container.** Rooms and live connections live in server memory, so extra replicas would split players across instances, and a restart clears open rooms. The pass-the-phone games are unaffected, because their state lives in the URL.
+
+## How it works
+
+```
+src/
+├── app/
+│   ├── page.tsx                    home: join with code / start a room
+│   ├── r/[code]/                   player screen (join form → game)
+│   ├── tv/[code]/                  TV display + host admin panel
+│   ├── how-to-play/                rules index + one page per game
+│   ├── api/rooms/                  POST create room
+│   ├── api/rooms/[code]/           GET snapshot · POST every action
+│   ├── api/rooms/[code]/stream/    Server-Sent Events (live updates)
+│   ├── api/rooms/[code]/avatar/    profile pictures
+│   ├── party/                      pass-the-phone games (state in URL)
+│   └── cards/                      hand dealer
+├── games/<game>/{player,tv}.tsx    UI for each room game
+├── components/room/                join form, avatar, drink alert, shell
+└── lib/
+    ├── rooms/core.ts               rooms, players, tokens, presence, drinks
+    ├── rooms/games/*.ts            game rules (server-side)
+    ├── rooms/registry.ts           kind → game module
+    ├── rooms/client.ts             useRoomStream, tokens, avatar resize
+    ├── guides.ts                   how-to-play content
+    ├── ring-of-fire.ts             card rules shared by both versions
+    ├── prompts.ts                  prompt decks
+    └── cards.ts                    deck + seeded shuffle
+```
+
+- **Real-time:** each screen opens one `EventSource` to `/api/rooms/CODE/stream`. If nothing arrives within 5 s (because a proxy is buffering the stream), it switches to polling `/api/rooms/CODE/state` every 1.5 s. Every action is a `POST`, mutates the in-memory room and pushes a fresh view to every open stream. Presence ("away") is simply "no open stream". The browser reconnects by itself after drops.
+- **Admin password:** 12 random characters from an unambiguous 31-letter alphabet (about 59 bits), compared in constant time. After 5 wrong tries the room locks for 30 s, doubling each further miss up to 15 min. It's only ever sent to devices that are already admin. **Change password** issues a new password and a new host token, which signs out every other admin device.
+- **Identity:** joining returns a secret player token, kept per tab in `sessionStorage` (so two tabs can be two players) with `localStorage` as a fallback. Creating a room returns a host token, which unlocks admin controls. Other players only ever see public player IDs.
+- **Privacy:** views are built per viewer, so the hangman word is only sent to the picker until the round ends.
+- **Party games** are fully client-side. A seeded shuffle plus the moves in the URL reproduce the whole game.
+
+### Adding a room game
+
+1. Write `src/lib/rooms/games/<name>.ts` that exports a `GameModule` (`init`, `act`, `view`, optional `onJoin` / `onLeave`). Call `addDrink()` to buzz someone's phone.
+2. Register it in `src/lib/rooms/registry.ts` and add the kind to `GameKind` in `core.ts`.
+3. Add `src/games/<name>/player.tsx` and `tv.tsx`, and wire them into `app/r/[code]/room-client.tsx` and `app/tv/[code]/tv-client.tsx`.
+4. Add a guide to `src/lib/guides.ts` and a card to `ROOM_GAMES` on the home page.
+
+### Adding a prompt game
+
+Make `src/app/party/<name>/page.tsx` that renders `<PromptGame prompts={[...]} prefix="..." rule="..." intro={...} />` inside `<GameShell>`, and add it to the `GAMES` list in `src/app/party/page.tsx`. `never-have-i-ever/page.tsx` is a working example.
+
+### Scaling beyond one server
+
+Rooms and their live connections live in one process. To run several instances, move room state into a shared store such as Redis and fan out change notifications through Redis pub/sub, so each instance can push to the streams it holds.
+
+## Branding
+
+| Asset | Where |
+| --- | --- |
+| Logo mark: two fanned cards with a heart | `src/components/logo.tsx` (`<LogoMark>`, `<Logo>`); static copy at `docs/logo.svg` |
+| Favicon | `src/app/icon.svg` |
+| Apple touch icon (180 px) | `src/app/apple-icon.tsx`, generated with `next/og` |
+| Social share image (1200×630) | `src/app/opengraph-image.tsx`, generated; copy at `docs/banner.png` |
+| Web app manifest (add to home screen) | `src/app/manifest.ts` |
+| Name, tagline, description | `BRAND` in `src/components/logo.tsx` |
+
+**Wordmark:** "bnhm" in the theme's heading font, with ".fun" in the accent colour. In the app, the logo uses theme colours, so it fits all 9 themes. The favicon and share image use the Notebook palette: ink `#1f2a44`, paper `#f7f3e8`, accent `#c2412d`.
+
+Set `NEXT_PUBLIC_SITE_URL` (default `https://bnhm.fun`) so share links and preview images point at your own domain.
+

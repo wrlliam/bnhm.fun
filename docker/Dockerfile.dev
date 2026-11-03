@@ -1,0 +1,9 @@
+# Development image: runs `bun dev` with hot reload against the mounted source.
+FROM oven/bun:1.3-alpine
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    WATCHPACK_POLLING=true
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+EXPOSE 3000
+CMD ["bun", "run", "dev", "--hostname", "0.0.0.0", "--port", "3000"]

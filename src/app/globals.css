@@ -1,0 +1,329 @@
+@import "tailwindcss";
+
+/*
+ * Themes. Every colour in the UI comes from these variables, so a theme is just
+ * a block of values on <html data-theme="…">. Semantics:
+ *   paper    page background          ink      text + primary buttons
+ *   surface  panels / cards           faint    secondary text
+ *   miss     "bad" / drink accent     hit      "good" / your-turn accent
+ */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-faint: var(--faint);
+  --color-rule: var(--rule);
+  --color-margin: var(--margin);
+  --color-miss: var(--miss);
+  --color-hit: var(--hit);
+  --color-card-back: var(--card-back);
+  --font-sans: var(--body-font);
+  --font-hand: var(--hand-font);
+}
+
+:root,
+[data-theme="notebook"] {
+  color-scheme: light;
+  --paper: #f7f3e8;
+  --surface: #ffffff;
+  --ink: #1f2a44;
+  --faint: #7d8290;
+  --rule: #c9d6e8;
+  --margin: #e4a3a3;
+  --miss: #c2412d;
+  --hit: #2f7d4f;
+  --card-back: #1f2a44;
+  --hand-font: var(--font-caveat);
+  --hand-adjust: none;
+  --body-font: var(--font-geist-sans);
+  --bg: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, var(--rule) 31px, var(--rule) 32px);
+  --bg-wide:
+    linear-gradient(to right, transparent 3.5rem, var(--margin) 3.5rem, var(--margin) calc(3.5rem + 1px), transparent calc(3.5rem + 1px)),
+    var(--bg);
+}
+
+[data-theme="night"] {
+  color-scheme: dark;
+  --paper: #0e0a1f;
+  --surface: #1a1433;
+  --ink: #f4f0ff;
+  --faint: #9d93c4;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ff4f93;
+  --hit: #35f2a4;
+  --card-back: #ff4f93;
+  --hand-font: var(--font-fredoka);
+  --hand-adjust: 0.42;
+  --bg:
+    radial-gradient(60rem 40rem at 10% -10%, rgb(255 79 147 / 0.18), transparent 60%),
+    radial-gradient(50rem 40rem at 110% 10%, rgb(53 242 164 / 0.12), transparent 60%),
+    radial-gradient(40rem 30rem at 50% 120%, rgb(120 90 255 / 0.2), transparent 60%);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="casino"] {
+  color-scheme: dark;
+  --paper: #0f4d31;
+  --surface: #0b3d27;
+  --ink: #f7ecd0;
+  --faint: #a9cbb5;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ef6a5b;
+  --hit: #f2c14e;
+  --card-back: #8c1d2c;
+  --hand-font: var(--font-playfair);
+  --hand-adjust: 0.4;
+  --bg:
+    radial-gradient(ellipse at center, transparent 40%, rgb(0 0 0 / 0.45) 100%),
+    repeating-radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.015) 0 1px, transparent 1px 3px);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="clean"] {
+  color-scheme: light;
+  --paper: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #111827;
+  --faint: #6b7280;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #dc2626;
+  --hit: #059669;
+  --card-back: #111827;
+  --hand-font: var(--font-geist-sans);
+  --hand-adjust: 0.43;
+  --bg: none;
+  --bg-wide: none;
+}
+
+[data-theme="chalkboard"] {
+  color-scheme: dark;
+  --paper: #2b3a34;
+  --surface: #33443d;
+  --ink: #f2f0e6;
+  --faint: #a9b8ae;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ff8a7a;
+  --hit: #ffe37a;
+  --card-back: #7a4a2b;
+  --hand-font: var(--font-gochi);
+  --hand-adjust: 0.4;
+  --body-font: var(--font-geist-sans);
+  /* chalk dust + smudges */
+  --bg:
+    radial-gradient(40rem 25rem at 20% 10%, rgb(255 255 255 / 0.06), transparent 70%),
+    radial-gradient(30rem 20rem at 85% 70%, rgb(255 255 255 / 0.05), transparent 70%),
+    repeating-radial-gradient(circle at 10% 20%, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 4px);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="arcade"] {
+  color-scheme: dark;
+  --paper: #07070c;
+  --surface: #12121e;
+  --ink: #e8fffb;
+  --faint: #7f8aa8;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ff3b6b;
+  --hit: #22f5d0;
+  --card-back: #3b2bff;
+  --hand-font: var(--font-vt323);
+  --hand-adjust: 0.52;
+  --body-font: var(--font-geist-mono);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --bg:
+    linear-gradient(rgb(34 245 208 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(34 245 208 / 0.05) 1px, transparent 1px);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="sunset"] {
+  color-scheme: light;
+  --paper: #fff1e6;
+  --surface: #fffaf5;
+  --ink: #3b1d3a;
+  --faint: #9a6f84;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #e8475f;
+  --hit: #148f8b;
+  --card-back: #e8475f;
+  --hand-font: var(--font-pacifico);
+  --hand-adjust: 0.36;
+  --body-font: var(--font-geist-sans);
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --bg:
+    radial-gradient(70rem 40rem at 50% -20%, rgb(255 166 107 / 0.45), transparent 70%),
+    radial-gradient(50rem 30rem at 100% 100%, rgb(232 71 95 / 0.18), transparent 70%),
+    linear-gradient(to bottom, #ffe3cf, #fff1e6 40%);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="ocean"] {
+  color-scheme: dark;
+  --paper: #062238;
+  --surface: #0b3150;
+  --ink: #e4f6ff;
+  --faint: #86afc9;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ff7d7d;
+  --hit: #3fe3d0;
+  --card-back: #1d6fae;
+  --hand-font: var(--font-baloo);
+  --hand-adjust: 0.44;
+  --body-font: var(--font-geist-sans);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --bg:
+    radial-gradient(60rem 35rem at 0% 0%, rgb(63 227 208 / 0.14), transparent 65%),
+    radial-gradient(70rem 40rem at 100% 120%, rgb(29 111 174 / 0.45), transparent 65%),
+    repeating-linear-gradient(170deg, transparent 0 40px, rgb(255 255 255 / 0.02) 40px 80px);
+  --bg-wide: var(--bg);
+}
+
+[data-theme="candy"] {
+  color-scheme: light;
+  --paper: #fff0f7;
+  --surface: #ffffff;
+  --ink: #4a2a63;
+  --faint: #a283b4;
+  --rule: transparent;
+  --margin: transparent;
+  --miss: #ff4f8b;
+  --hit: #7b5cff;
+  --card-back: #ff8fc1;
+  --hand-font: var(--font-fredoka);
+  --hand-adjust: 0.44;
+  --body-font: var(--font-baloo);
+  --radius-md: 0.9rem;
+  --radius-lg: 1.1rem;
+  --radius-xl: 1.6rem;
+  --radius-2xl: 2.2rem;
+  --bg:
+    radial-gradient(circle at 15% 20%, rgb(255 143 193 / 0.35) 0 6rem, transparent 6.1rem),
+    radial-gradient(circle at 85% 15%, rgb(123 92 255 / 0.18) 0 8rem, transparent 8.1rem),
+    radial-gradient(circle at 70% 85%, rgb(80 220 200 / 0.2) 0 7rem, transparent 7.1rem),
+    radial-gradient(#ffd6ea 1.5px, transparent 1.5px);
+  --bg-wide: var(--bg);
+}
+
+body {
+  background-color: var(--paper);
+  background-image: var(--bg);
+  background-attachment: fixed;
+  font-family: var(--body-font);
+  color: var(--ink);
+  transition: background-color 200ms, color 200ms;
+}
+
+@media (min-width: 640px) {
+  body {
+    background-image: var(--bg-wide);
+  }
+}
+
+/* Display fonts differ a lot in size; normalise them to the notebook look. */
+.font-hand {
+  font-size-adjust: var(--hand-adjust);
+}
+[data-theme="clean"] .font-hand {
+  letter-spacing: -0.02em;
+}
+
+/* ---- per-theme flourishes ------------------------------------------------ */
+
+/* glow on headings in the dark party themes */
+[data-theme="night"] .font-hand {
+  text-shadow: 0 0 18px rgb(255 79 147 / 0.35);
+}
+[data-theme="arcade"] .font-hand {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 6px rgb(34 245 208 / 0.6),
+    2px 2px 0 rgb(255 59 107 / 0.55);
+}
+[data-theme="ocean"] .font-hand {
+  text-shadow: 0 2px 20px rgb(63 227 208 / 0.25);
+}
+[data-theme="casino"] .font-hand {
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.4);
+}
+[data-theme="chalkboard"] .font-hand {
+  text-shadow: 0 0 1px rgb(255 255 255 / 0.6);
+  opacity: 0.95;
+}
+[data-theme="sunset"] .font-hand {
+  font-weight: 400;
+}
+
+/* Arcade: CRT scanlines over everything (pointer-events none, so clicks pass through) */
+[data-theme="arcade"] body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.18) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+[data-theme="arcade"] body {
+  background-size: 32px 32px;
+}
+
+/* Chalkboard: wooden frame on wide screens */
+@media (min-width: 640px) {
+  [data-theme="chalkboard"] body {
+    box-shadow: inset 0 0 0 10px #6b4426, inset 0 0 0 12px #3d2614, inset 0 0 60px rgb(0 0 0 / 0.5);
+  }
+}
+
+[data-theme="candy"] body {
+  background-size: auto, auto, auto, 24px 24px;
+}
+
+/* Candy: everything a little bouncier */
+[data-theme="candy"] button {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@keyframes draw {
+  from { stroke-dashoffset: var(--len); }
+  to { stroke-dashoffset: 0; }
+}
+.draw {
+  stroke-dasharray: var(--len);
+  animation: draw 450ms ease-out both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.shake { animation: shake 360ms ease-in-out; }
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pop { animation: pop 200ms ease-out both; }
