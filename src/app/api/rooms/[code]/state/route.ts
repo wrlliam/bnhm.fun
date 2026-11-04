@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
 import { getRoom, resolveActor } from "@/lib/rooms/core";
 import { clientIp, rateLimit } from "@/lib/rooms/limits";
-import { errorResponse, viewFor } from "@/lib/rooms/server";
+import { errorResponse, viewFor, ensureRooms } from "@/lib/rooms/server";
 
 /**
  * Polling fallback for networks/proxies that buffer Server-Sent Events (e.g.
  * Cloudflare quick tunnels). Same view as the stream; also counts as presence.
  */
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/rooms/[code]/state">) {
+  await ensureRooms();
   try {
     rateLimit(`poll:${clientIp(req)}`, 1500, 60_000);
     const { code } = await ctx.params;

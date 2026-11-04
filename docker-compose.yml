@@ -3,7 +3,8 @@
 #   docker compose --profile tunnel up -d --build   → plus a public https://*.trycloudflare.com URL
 #                                                     (no domain or port-forwarding needed)
 # HTTPS: point your own reverse proxy at the app — see docker/Caddyfile.example.
-# Run a single app replica: rooms are kept in memory.
+# Rooms are saved to the bundled Redis, so restarts/redeploys don't end games.
+# Run a single app replica (live connections are per process).
 
 name: bnhm-fun
 
@@ -22,6 +23,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # set REDIS_URL= (empty) in .env to keep rooms in memory only
+      REDIS_URL: ${REDIS_URL-redis://redis:6379}
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       # BIND=127.0.0.1 keeps the app reachable only from this machine (e.g. behind
       # a Caddy running on the host). Default listens on all interfaces.
@@ -39,6 +45,19 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # append-only file: rooms survive Redis restarts too; memory capped, oldest keys evicted
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy volatile-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   # Instant public URL through Cloudflare, no account needed. The URL is printed
   # in the logs:  docker compose logs tunnel | grep trycloudflare
   # For a permanent URL on your own domain, create a named tunnel in the
@@ -52,3 +71,6 @@ services:
         condition: service_healthy
     # http2 over TCP: works on networks that block QUIC/UDP
     command: tunnel --no-autoupdate --protocol http2 --url http://app:3000
+
+volumes:
+  redis_data:

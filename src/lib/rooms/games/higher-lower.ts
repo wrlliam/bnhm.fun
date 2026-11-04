@@ -165,4 +165,5 @@ export const higherLower: GameModule<HlState> = {
     }
   },
   view,
+  restore: (room) => armTurnTimer(room),
 };

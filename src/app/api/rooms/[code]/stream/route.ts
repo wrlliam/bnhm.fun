@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
 import { GameError, getRoom, resolveActor, subscribe } from "@/lib/rooms/core";
 import { MAX_STREAMS_PER_ROOM } from "@/lib/rooms/limits";
-import { errorResponse, viewFor } from "@/lib/rooms/server";
+import { errorResponse, viewFor, ensureRooms } from "@/lib/rooms/server";
 
 /**
  * Server-Sent Events: sends the room as seen by this viewer, then again on every
  * change. `?token=` identifies a player, `?host=` the host (TV / admin panel).
  */
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/rooms/[code]/stream">) {
+  await ensureRooms();
   let room;
   try {
     const { code } = await ctx.params;

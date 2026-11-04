@@ -149,4 +149,10 @@ export const trivia: GameModule<TriviaState> = {
     }
   },
   view,
+  restore(room) {
+    const s = room.state;
+    if (s.status === "question" && s.deadline) {
+      schedule(room, "question", s.deadline - Date.now() + 300, () => room.state.status === "question" && reveal(room));
+    }
+  },
 };

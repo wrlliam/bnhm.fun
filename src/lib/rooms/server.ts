@@ -20,7 +20,13 @@ import {
   updateProfile,
 } from "./core";
 import { MAX_ROOMS } from "./limits";
+import { roomsReady } from "./persist";
 import { GAMES, isGameKind } from "./registry";
+
+/** Await before handling any room request: loads saved rooms from Redis once per process. */
+export function ensureRooms() {
+  return roomsReady(rooms, (room) => GAMES[room.kind]?.restore?.(room));
+}
 
 export function create(kind: unknown) {
   if (!isGameKind(kind)) throw new GameError("Unknown game");

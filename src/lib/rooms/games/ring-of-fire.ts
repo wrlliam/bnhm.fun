@@ -461,4 +461,5 @@ export const ringOfFire: GameModule<RofState> = {
   },
 
   view,
+  restore: (room) => armTurnTimer(room),
 };

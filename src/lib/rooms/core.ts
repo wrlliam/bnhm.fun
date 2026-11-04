@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { REACTIONS } from "./constants";
+import { forget, saveSoon } from "./persist";
 
 /**
  * Room engine shared by every multiplayer game.
@@ -91,6 +92,8 @@ export type GameModule<S> = {
   onLeave?(room: Room<S>, playerId: string): void;
   act(room: Room<S>, actor: Actor, action: Record<string, unknown>): void;
   view(room: Room<S>, viewer: Actor): unknown;
+  /** After loading from Redis: re-arm any timers (countdowns, turn clocks). */
+  restore?(room: Room<S>): void;
 };
 
 const g = globalThis as unknown as { __rooms?: Map<string, Room> };
@@ -104,7 +107,10 @@ function cleanup() {
   const now = Date.now();
   for (const [code, room] of rooms) {
     const live = room.listeners.size > 0 || room.players.some((p) => isOnline(room, p.id));
-    if (!live && now - room.updatedAt > ROOM_TTL) rooms.delete(code);
+    if (!live && now - room.updatedAt > ROOM_TTL) {
+      rooms.delete(code);
+      void forget(code);
+    }
   }
 }
 
@@ -152,6 +158,7 @@ export function createRoom<S>(kind: GameKind, init: () => S): Room<S> {
 
 export function changed(room: Room) {
   room.updatedAt = Date.now();
+  saveSoon(room);
   for (const fn of room.listeners) {
     try {
       fn();
