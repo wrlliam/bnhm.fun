@@ -83,6 +83,9 @@ export function Chooser({ room, token, hostToken }: RofProps) {
   return (
     <div className="mt-6 rounded-xl border border-ink/15 bg-surface p-5">
       <p className="font-medium">{choice.prompt}</p>
+      {choice.kind === "mate" && g.pairLimit && g.mates.length > 0 && (
+        <p className="mt-1 text-sm text-faint">Small table: one partnership at a time, so this replaces the current one</p>
+      )}
       {choice.kind === "many" && unknown.length > 0 && (
         <p className="mt-1 text-sm text-faint">
           {g.suggested.length > 0 && "Players who said already are ticked. "}
@@ -273,6 +276,7 @@ export function PairsEditor({ room, hostToken }: { room: RoomView; hostToken: st
 
   return (
     <div className="space-y-4">
+      {g.pairLimit && <p className="text-xs text-faint">Small table: one partnership at a time. Pairing someone new replaces it</p>}
       <div className="grid grid-cols-2 gap-1 rounded-xl bg-ink/5 p-1 text-sm" role="radiogroup" aria-label="Direction">
         {(
           [
@@ -536,26 +540,73 @@ export function RuleVote({ room, token, hostToken, big = false }: RofProps & { b
   );
 }
 
-/** Host switch for endless mode. Turning it off is how you "cancel": the game ends with the current deck. */
-export function EndlessToggle({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
-  const g = game(room);
+function SwitchRow({ label, hint, on, onChange }: { label: string; hint: string; on: boolean; onChange: (on: boolean) => void }) {
   return (
-    <button
-      role="switch"
-      aria-checked={g.endless}
-      onClick={() => act(room, null, hostToken, { type: "endless", on: !g.endless })}
-      className="flex w-full items-center gap-3 rounded-xl text-left"
-    >
+    <button role="switch" aria-checked={on} onClick={() => onChange(!on)} className="flex w-full items-center gap-3 rounded-xl text-left">
       <span className="flex-1">
-        <span className="block text-sm font-medium">Endless mode{g.endless && g.status !== "lobby" ? ` · deck ${g.deckNo}` : ""}</span>
-        <span className="block text-xs text-faint">
-          {g.endless ? "A new deck is shuffled in whenever one runs out. Turn off to end with this deck" : "Shuffle in a new deck whenever one runs out"}
-        </span>
+        <span className="block text-sm font-medium">{label}</span>
+        <span className="block text-xs text-faint">{hint}</span>
       </span>
-      <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${g.endless ? "bg-hit" : "bg-ink/20"}`}>
-        <span className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-[left] ${g.endless ? "left-[1.375rem]" : "left-0.5"}`} />
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${on ? "bg-hit" : "bg-ink/20"}`}>
+        <span className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-[left] ${on ? "left-[1.375rem]" : "left-0.5"}`} />
       </span>
     </button>
+  );
+}
+
+/**
+ * Host house rules: endless decks and how drinking partners behave.
+ * Turning endless off is how you "cancel" it: the game ends with the current deck.
+ */
+export function HouseRules({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
+  const g = game(room);
+  const h = g.house;
+  const set = (body: Record<string, unknown>) => act(room, null, hostToken, { type: "house", ...body });
+  return (
+    <div className="space-y-3">
+      <SwitchRow
+        label={`Endless mode${g.endless && g.status !== "lobby" ? ` · deck ${g.deckNo}` : ""}`}
+        hint={g.endless ? "A new deck is shuffled in whenever one runs out. Turn off to end with this deck" : "Shuffle in a new deck whenever one runs out"}
+        on={g.endless}
+        onChange={(on) => act(room, null, hostToken, { type: "endless", on })}
+      />
+      <SwitchRow
+        label="Fresh partners halfway"
+        hint="Clear every drinking partner once half the deck is drawn"
+        on={h.clearHalfway}
+        onChange={(on) => set({ clearHalfway: on })}
+      />
+      {g.endless && (
+        <SwitchRow
+          label="Fresh partners each deck"
+          hint="Clear every drinking partner when a new deck is shuffled in"
+          on={h.clearEachDeck}
+          onChange={(on) => set({ clearEachDeck: on })}
+        />
+      )}
+      <div>
+        <p className="text-sm font-medium">Small table partners</p>
+        <p className="text-xs text-faint">
+          With few players, allow one partnership at a time. A new pair replaces it
+          {g.pairLimit ? ". On now" : ""}
+        </p>
+        <div className="mt-2 flex gap-1 rounded-xl bg-ink/5 p-1">
+          {[
+            [0, "No limit"],
+            [3, "3 or fewer"],
+            [4, "4 or fewer"],
+          ].map(([n, label]) => (
+            <button
+              key={n}
+              onClick={() => set({ onePairUpTo: n })}
+              className={`flex-1 rounded-lg py-1.5 text-sm font-medium ${h.onePairUpTo === n ? "bg-surface shadow-sm" : "text-faint"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

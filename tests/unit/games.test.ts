@@ -54,6 +54,28 @@ describe("Ring of Fire", () => {
     expect(s.status).toBe("finished");
   });
 
+  test("house rules: partners clear halfway, and a small table keeps one partnership", () => {
+    const { host, room, code, players } = setup("ring-of-fire", ["Ann", "Ben", "Cat"]);
+    const [ann, ben, cat] = players.map((p) => p.id);
+    host({ type: "settings", disabled: ["A", "2", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"] });
+    host({ type: "house", onePairUpTo: 3, clearHalfway: true });
+    host({ type: "start" });
+    const s = room.state as RofState;
+    host({ type: "addMate", a: ann, b: ben, both: true });
+    host({ type: "addMate", a: cat, b: ann });
+    expect(s.mates).toEqual([[cat, ann]]); // the new pair replaced Ann ⇄ Ben
+    ackAll(code);
+    host({ type: "draw" });
+    expect(s.mates).toHaveLength(1);
+    ackAll(code);
+    host({ type: "draw" }); // 2 of 4 drawn: halfway
+    expect(s.mates).toEqual([]);
+    host({ type: "house", onePairUpTo: 0 });
+    host({ type: "addMate", a: ann, b: ben });
+    host({ type: "addMate", a: cat, b: ben });
+    expect(s.mates).toHaveLength(2);
+  });
+
   test("turns are enforced and rotate", () => {
     const { as, host, room, players } = setup("ring-of-fire", ["Ann", "Ben"]);
     host({ type: "start" });

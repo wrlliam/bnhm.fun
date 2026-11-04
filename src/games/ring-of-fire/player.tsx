@@ -10,7 +10,7 @@ import { buzz, playSound } from "@/lib/feedback";
 import type { RoomView, StreamStatus } from "@/lib/rooms/client";
 import { RULES } from "@/lib/ring-of-fire";
 import { Countdown, TurnTimerSetting } from "@/components/room/game-bits";
-import { CardSettings, Chooser, DeckFinished, EndlessToggle, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
+import { CardSettings, Chooser, DeckFinished, HouseRules, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
 
 /**
  * Phone view. Kept deliberately simple: what you need to do now, the last card,
@@ -23,7 +23,7 @@ export function RofPlayer(props: RofProps & { status: StreamStatus; token: strin
   const menu = room.isHost ? (
     <div className="space-y-3">
       <TurnTimerSetting room={room} value={g.turnSeconds} />
-      <EndlessToggle room={room} hostToken={hostToken} />
+      <HouseRules room={room} hostToken={hostToken} />
       <details>
         <summary className="cursor-pointer text-sm font-medium">Host: drinking partners</summary>
         <div className="mt-3">
@@ -93,7 +93,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
           </button>
           <AdminAccess room={room} hostToken={hostToken} />
           <TurnTimerSetting room={room} value={game(room).turnSeconds} />
-          <EndlessToggle room={room} hostToken={hostToken} />
+          <HouseRules room={room} hostToken={hostToken} />
           <details className="pt-2">
             <summary className="cursor-pointer text-sm font-medium">Drinking partners (optional): drink together</summary>
             <div className="mt-3">

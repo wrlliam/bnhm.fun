@@ -175,6 +175,19 @@ export const GAMES_CATALOG: GameMeta[] = [
     options: [
       TURN_TIMER,
       { key: "endless", type: "toggle", label: "Endless", hint: "Shuffle in a new deck whenever one runs out, so the game never ends on its own", default: false },
+      { key: "clearHalfway", type: "toggle", label: "Fresh partners halfway", hint: "Clear every drinking partner once half the deck is drawn", default: false },
+      {
+        key: "onePairUpTo",
+        type: "choice",
+        label: "Small table partners",
+        hint: "With few players, allow only one partnership. A new 8 replaces it",
+        choices: [
+          { value: "0", label: "No limit" },
+          { value: "3", label: "3 or fewer" },
+          { value: "4", label: "4 or fewer" },
+        ],
+        default: "0",
+      },
     ],
   },
   {

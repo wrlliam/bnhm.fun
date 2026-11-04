@@ -24,6 +24,18 @@ export const CHOICE: Record<Rank, null | { kind: "one" | "many" | "mate" | "rule
 /** Cards that target everyone in a group, resolved automatically when everyone's group is known. */
 const GROUP_CARD: Partial<Record<Rank, "guy" | "girl">> = { "5": "guy", "6": "girl" };
 
+/** Host-set house rules, kept across games in the same room. */
+export type HouseRules = {
+  /** Clear every drinking partner once half the deck has been drawn. */
+  clearHalfway: boolean;
+  /** Clear every drinking partner whenever a new deck is shuffled in. */
+  clearEachDeck: boolean;
+  /** With this many players or fewer, only one partnership is allowed (0 = no limit). */
+  onePairUpTo: number;
+};
+
+export const DEFAULT_HOUSE: HouseRules = { clearHalfway: false, clearEachDeck: false, onePairUpTo: 0 };
+
 export type RofState = {
   status: "lobby" | "playing" | "finished";
   seed: string;
@@ -51,6 +63,9 @@ export type RofState = {
   endless: boolean;
   /** Which deck we're on (1 = first); goes up each time play continues with a new deck. */
   deckNo: number;
+  house: HouseRules;
+  /** The halfway partner clear-out already happened for this deck. */
+  halfwayDone: boolean;
   log: { id: number; text: string }[];
   logSeq: number;
 };
@@ -113,6 +128,39 @@ function isMate(s: RofState, a: string, b: string) {
   return s.mates.some(([x, y]) => x === a && y === b);
 }
 
+/** A partnership is the two players, whichever way round (or both ways) they're paired. */
+const pairKey = (a: string, b: string) => [a, b].sort().join("|");
+
+function pairLimitOn(room: R) {
+  const n = room.state.house.onePairUpTo;
+  return n > 0 && room.players.length <= n;
+}
+
+/** Small table: keep only one partnership (the one with `keep`, else the newest). True if any were dropped. */
+function enforcePairLimit(room: R, keep?: [string, string]) {
+  const s = room.state;
+  if (!pairLimitOn(room) || !s.mates.length) return false;
+  const k = pairKey(...(keep ?? s.mates[s.mates.length - 1]));
+  const before = s.mates.length;
+  s.mates = s.mates.filter(([a, b]) => pairKey(a, b) === k);
+  return s.mates.length < before;
+}
+
+function clearMates(room: R, why: string) {
+  if (!room.state.mates.length) return;
+  room.state.mates = [];
+  log(room, `${why}: all drinking partners are cleared`);
+}
+
+/** Apply any house-rule fields present on an action. */
+function setHouse(room: R, action: Record<string, unknown>) {
+  const h = room.state.house;
+  if (action.clearHalfway !== undefined) h.clearHalfway = !!action.clearHalfway;
+  if (action.clearEachDeck !== undefined) h.clearEachDeck = !!action.clearEachDeck;
+  if (action.onePairUpTo !== undefined) h.onePairUpTo = [3, 4].includes(Number(action.onePairUpTo)) ? Number(action.onePairUpTo) : 0;
+  if (enforcePairLimit(room)) log(room, "Small table: only the newest partnership is kept");
+}
+
 function whoDrinks(room: R, ids: string[]) {
   return `${ids.map((id) => playerName(room, id)).join(", ")} ${ids.length === 1 ? "drinks" : "drink"}.`;
 }
@@ -126,6 +174,11 @@ function remaining(s: RofState) {
   return d.filter((c, i) => !s.drawn.includes(i) && !s.disabled.includes(c.rank)).length;
 }
 
+/** Cards in a full deck once the turned-off ranks are taken out. */
+function playable(s: RofState) {
+  return deck(s).filter((c) => !s.disabled.includes(c.rank)).length;
+}
+
 function turnPlayer(s: RofState) {
   return s.turnOrder.length ? s.turnOrder[s.turn % s.turnOrder.length] : null;
 }
@@ -133,7 +186,12 @@ function turnPlayer(s: RofState) {
 function advance(room: R) {
   const s = room.state;
   if (s.turnOrder.length) s.turn = (s.turn + 1) % s.turnOrder.length;
-  if (remaining(s) === 0) {
+  const left = remaining(s);
+  if (s.house.clearHalfway && !s.halfwayDone && left <= playable(s) / 2) {
+    s.halfwayDone = true;
+    clearMates(room, "Halfway through the deck");
+  }
+  if (left === 0) {
     if (s.endless) newDeck(room);
     else {
       s.status = "finished";
@@ -155,7 +213,9 @@ function newDeck(room: R) {
   s.current = null;
   s.deckNo++;
   s.status = "playing";
+  s.halfwayDone = false;
   log(room, `Deck ${s.deckNo} shuffled in. Keep going, and refill the King's cup`);
+  if (s.house.clearEachDeck) clearMates(room, "New deck");
 }
 
 /** (Re)start the per-turn clock. Running out skips the turn (and any unfinished choice). */
@@ -248,6 +308,9 @@ function view(room: R) {
     deadline: s.deadline,
     endless: s.endless,
     deckNo: s.deckNo,
+    house: s.house,
+    /** The small-table limit applies right now: one partnership at a time. */
+    pairLimit: pairLimitOn(room),
   };
 }
 
@@ -276,6 +339,8 @@ export const ringOfFire: GameModule<RofState> = {
     deadline: null,
     endless: false,
     deckNo: 1,
+    house: { ...DEFAULT_HOUSE },
+    halfwayDone: false,
     log: [],
     logSeq: 0,
   }),
@@ -298,6 +363,13 @@ export const ringOfFire: GameModule<RofState> = {
       else s.turn = 0;
     }
     s.mates = s.mates.filter(([a, b]) => a !== playerId && b !== playerId);
+    // removePlayer may not have dropped them from room.players yet
+    if (s.house.onePairUpTo && room.players.filter((p) => p.id !== playerId).length <= s.house.onePairUpTo && s.mates.length) {
+      const before = s.mates.length;
+      const k = pairKey(...s.mates[s.mates.length - 1]);
+      s.mates = s.mates.filter(([a, b]) => pairKey(a, b) === k);
+      if (s.mates.length < before) log(room, "Small table now: only the newest partnership is kept");
+    }
     if (s.questionMaster === playerId) s.questionMaster = null;
     if (s.current?.by === playerId && s.current.pending) {
       s.current.pending = false;
@@ -316,6 +388,23 @@ export const ringOfFire: GameModule<RofState> = {
           armTurnTimer(room);
         }
         if (action.endless !== undefined) s.endless = !!action.endless;
+        setHouse(room, action);
+        return;
+      }
+      case "house": {
+        requireHost(actor);
+        setHouse(room, action);
+        const h = s.house;
+        log(
+          room,
+          `House rules: ${[
+            h.clearHalfway && "partners cleared halfway",
+            h.clearEachDeck && "partners cleared each new deck",
+            h.onePairUpTo && `one partnership with ${h.onePairUpTo} or fewer players`,
+          ]
+            .filter(Boolean)
+            .join(", ") || "none"}`,
+        );
         return;
       }
       case "endless": {
@@ -353,6 +442,7 @@ export const ringOfFire: GameModule<RofState> = {
           disabled: s.disabled,
           turnSeconds: s.turnSeconds,
           endless: s.endless,
+          house: s.house,
           status: "playing",
           turnOrder: room.players.map((p) => p.id),
         });
@@ -416,6 +506,7 @@ export const ringOfFire: GameModule<RofState> = {
           }
           s.mates.push([cur.by, ids[0]]);
           cur.outcome = `${playerName(room, ids[0])} is ${by}'s mate. When ${by} drinks, they drink.`;
+          if (enforcePairLimit(room, [cur.by, ids[0]])) cur.outcome += " Small table, so that replaces the old partnership.";
         } else if (action.mode === "removeVote") {
           // the Jack is spent on a vote instead of a new rule
           const rule = s.rules.find((r) => r.id === Number(action.ruleId));
@@ -469,7 +560,8 @@ export const ringOfFire: GameModule<RofState> = {
           throw new GameError(`${playerName(room, a)} and ${playerName(room, b)} are already partners`);
         }
         s.mates.push(...missing);
-        log(room, `Host paired ${playerName(room, a)} → ${playerName(room, b)}${action.both ? " (both ways)" : ""}`);
+        const replaced = enforcePairLimit(room, [a, b]);
+        log(room, `Host paired ${playerName(room, a)} → ${playerName(room, b)}${action.both ? " (both ways)" : ""}${replaced ? ", replacing the old partnership" : ""}`);
         return;
       }
       case "removeMate": {
@@ -501,7 +593,7 @@ export const ringOfFire: GameModule<RofState> = {
       }
       case "reset": {
         requireHost(actor);
-        room.state = { ...ringOfFire.init(), disabled: s.disabled, turnSeconds: s.turnSeconds, endless: s.endless };
+        room.state = { ...ringOfFire.init(), disabled: s.disabled, turnSeconds: s.turnSeconds, endless: s.endless, house: s.house };
         return;
       }
       default:
@@ -510,5 +602,13 @@ export const ringOfFire: GameModule<RofState> = {
   },
 
   view,
-  restore: (room) => armTurnTimer(room),
+  restore: (room) => {
+    // rooms saved before these settings existed
+    const s = room.state;
+    s.house = { ...DEFAULT_HOUSE, ...s.house };
+    s.endless ??= false;
+    s.deckNo ??= 1;
+    s.halfwayDone ??= false;
+    armTurnTimer(room);
+  },
 };

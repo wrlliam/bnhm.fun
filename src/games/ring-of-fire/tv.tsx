@@ -6,7 +6,7 @@ import { Avatar } from "@/components/room/avatar";
 import { WaitingForDrinks } from "@/components/room/drink-alert";
 import { Countdown } from "@/components/room/game-bits";
 import { act, BigButton } from "@/components/room/room-shell";
-import { CardSettings, Chooser, CurrentCard, DeckFinished, drinkTotals, EndlessToggle, game, nameOf, PairsEditor, type RofProps, RuleVote, TableInfo } from "./shared";
+import { CardSettings, Chooser, CurrentCard, DeckFinished, drinkTotals, HouseRules, game, nameOf, PairsEditor, type RofProps, RuleVote, TableInfo } from "./shared";
 
 /** Big-screen view. With the host token it doubles as the admin panel. */
 export function RofTv({ room, hostToken }: RofProps) {
@@ -167,7 +167,7 @@ export function RofTv({ room, hostToken }: RofProps) {
             </div>
             {showSettings && <CardSettings room={room} hostToken={hostToken} compact />}
             {showPairs && <PairsEditor room={room} hostToken={hostToken} />}
-            <EndlessToggle room={room} hostToken={hostToken} />
+            <HouseRules room={room} hostToken={hostToken} />
             <p className="text-xs text-faint">“drink” next to a name makes that player drink (rule broken, etc). Their mates drink too.</p>
           </div>
         )}
