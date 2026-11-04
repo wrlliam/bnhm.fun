@@ -153,7 +153,7 @@ function HigherLower() {
           </div>
 
           {done ? (
-            <p className="mt-8 font-hand text-3xl">Deck finished!</p>
+            <p className="mt-8 font-hand text-3xl">Deck finished</p>
           ) : (
             <div className="mt-8 flex flex-wrap gap-3">
               <button

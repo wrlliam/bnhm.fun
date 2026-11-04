@@ -67,7 +67,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
   return (
     <div className="pop space-y-6">
       <div>
-        <h2 className="font-hand text-5xl font-bold">You&rsquo;re in!</h2>
+        <h2 className="font-hand text-5xl font-bold">You&rsquo;re in</h2>
         <p className="mt-1 text-faint">
           {room.isHost ? "Start when everyone has joined." : "Waiting for the host to start the game."}
         </p>

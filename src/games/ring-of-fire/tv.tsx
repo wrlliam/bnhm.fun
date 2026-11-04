@@ -75,7 +75,7 @@ export function RofTv({ room, hostToken }: RofProps) {
                 <Chooser key={g.drawnCount} room={room} token={null} hostToken={hostToken} />
               </div>
             )}
-            {g.status === "finished" && <h2 className="font-hand text-7xl font-bold">Deck finished!</h2>}
+            {g.status === "finished" && <h2 className="font-hand text-7xl font-bold">Deck finished</h2>}
             <TableInfo room={room} big hostToken={admin ? hostToken : null} />
           </div>
         )}

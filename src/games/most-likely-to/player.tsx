@@ -50,7 +50,7 @@ export function MltPlayer({ room, token, hostToken, status }: Props) {
       {g.status === "lobby" && (
         <div className="pop space-y-6">
           <div>
-            <h2 className="font-hand text-5xl font-bold">You&rsquo;re in!</h2>
+            <h2 className="font-hand text-5xl font-bold">You&rsquo;re in</h2>
             <p className="mt-1 text-faint">
               {room.isHost ? "Start when everyone has joined." : "Waiting for the host to start the game."}
             </p>
@@ -144,7 +144,7 @@ export function MltPlayer({ room, token, hostToken, status }: Props) {
         </div>
       )}
 
-      {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">That&rsquo;s every card!</h2>}
+      {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">That&rsquo;s every card</h2>}
     </RoomShell>
   );
 }

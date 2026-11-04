@@ -23,13 +23,15 @@ Built with **Next.js 16**, **React 19**, **Tailwind CSS 4** and **Bun**. There's
 
 ## Highlights
 
-- **7 room games with a TV screen:** Ring of Fire, Most Likely To, Never Have I Ever, Truth or Drink, Higher or Lower, Trivia and Hangman. Join with a code or a **QR code**; open the TV / admin screen on a big display.
+- **11 room games with a TV screen.** Party games: Spotlight (secret votes in themed packs), Punchline (write the funniest answer), Bluff (fake answers to weird facts), Odd One Out (find the faker), Most Likely To, Trivia and Hangman. Drinking games: Ring of Fire, Never Have I Ever, Truth or Drink and Higher or Lower. Join with a code or a **QR code**; open the TV / admin screen on a big display.
+- **Easy flow:** pick a game → read three steps and set options → start. Switch the whole room to another game when one ends, without anyone rejoining.
+- **Solo puzzles:** Six Tries (make a word puzzle from your own word, share the link, see everyone's results) and Mini Grid crosswords.
 - **Party extras:** emoji reactions that float up on the TV, an end-of-game recap with awards, and an optional turn timer.
 - **Never lose your seat:** a 4-digit rejoin PIN gets you back in from a new phone, and the host can hand over host controls. Rooms survive restarts and redeploys with Redis.
 - **Your phone knows when you drink:** a full-screen alert with the reason, confirmed with *Done*. The next card waits until everyone has drunk.
 - **Ring of Fire extras:** mates that chain, a question master, Jack rules with phone votes to scrap them, and host toggles for individual cards (e.g. no King's cup).
 - **Admin from any device:** each room gets a secure admin password, so you can unlock host controls on a TV or a second phone.
-- **16 game modes in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
+- **25 game modes in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
 - **Rules for every game** at `/how-to-play`, linked from each game.
 - **Settings per device:** text size, keep screen awake, vibration, sounds, animations, and Drink/Forfeit wording for non-drinking groups.
 - **8 themes:** Notebook, Clean, Sunset, Candy, Night, Chalkboard, Ocean and Arcade, with live previews.
@@ -65,6 +67,10 @@ Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), 
 
 | Game                  | Phones                                                                    | TV / admin panel                                                      |
 | --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Spotlight**         | Secret vote: yes/no, or pick one of two players from the room             | Question, the two faces, then growing result bars with who voted       |
+| **Punchline**         | Answer two prompts; vote in anonymous face-offs                           | Who's still writing, the face-off, the reveal, a podium                |
+| **Bluff**             | Write a fake answer to a weird fact, then pick the truth                  | The fact, all answers, then each lie, its author and who fell for it   |
+| **Odd One Out**       | Press-and-hold secret card; vote for the faker; the faker guesses         | Category, speaking order, votes, the verdict                           |
 | **Ring of Fire**      | Draw on your turn, read the rule, pick who drinks / your mate / your rule | Big card + rule, whose turn, sips per player, mates, rules, event log |
 | **Most Likely To**    | Secret vote for a player                                                  | Card, who's voted, results bar chart                                  |
 | **Never Have I Ever** | Secret "I have" / "Never"; the guilty are revealed together              | Prompt, who's answered, the guilty                                    |
@@ -73,9 +79,13 @@ Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), 
 | **Trivia**            | Four coloured answers, 20 s, one go each                                  | Question, answers, countdown, live leaderboard                        |
 | **Hangman**           | Picker types the word; others guess on a keyboard                         | Stickman, word, missed letters, scores                                |
 
+**Spotlight packs:** Friends, Girls' night, Lads' night, Couples, Work do, Family, Spicy (18+) and Mix it up. Each pack has about 40 questions; a game plays 10, 20 or 30 picked at random, so repeats are rare. Anonymous mode keeps the percentages but hides who voted which way.
+
 **Flow:**
 
-1. On the home page, pick a game and press **Start a room**. You're the host.
+0. On the home page, tap a game. Its setup page shows the three steps and any options (pack, number of questions, turn timer, drinking mode); then **Start a room**.
+
+1. You're the host. Everyone else joins with the code or the QR code.
 2. Join your own room with a name and an optional photo. The photo is cropped and shrunk on your device to a 160 px JPEG before upload.
 3. Others enter the code on the home page, or open `/r/CODE`.
 4. Press **Open TV / admin** to open a popup to drag onto a TV, or open `/tv/CODE` on any screen. Anyone can watch; controls appear only on admin devices.
@@ -87,6 +97,7 @@ Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), 
 - **Rejoin PIN:** everyone has a 4-digit PIN in their Menu. On a new phone, open the room link, tap *Rejoin*, pick your name and enter the PIN. Five wrong tries lock that seat for a while.
 - **Host handover:** the host can tap *make host* on any player. Host rights follow that player, and the admin password rotates, so old admin screens drop off.
 - **Reactions:** an emoji bar at the bottom of every phone. Reactions float up on the TV with the sender's photo.
+- **Switch game:** Menu → *Switch game*, or the *What's next* panel when a game ends. The whole room moves to the new game with everyone still in it.
 - **Recap & stats:** Menu → *Game recap & stats* shows awards (Thirstiest, Stayed dry, Most picked on) and a sips table, with a *Share the results* button. The host can put the recap full-screen on the TV.
 - **Turn timer** (Ring of Fire, Higher or Lower): Off, 15, 30 or 60 s, set by the host. Running out skips the turn; it pauses while anyone is still drinking.
 
@@ -144,6 +155,11 @@ The ⚙ button in the bottom-right corner of every screen opens **Settings**. Ev
 | **Animations** | Card flips, pop-ins and shakes. "Reduce motion" in your system settings also turns these off | On |
 
 Text size and animations are applied before the first paint, like the theme. The code is in `src/lib/settings.ts` (hooks), `src/lib/settings-shared.ts` (defaults and the pre-paint script) and `src/components/settings-panel.tsx`.
+
+## Solo puzzles (`/solo`)
+
+- **Six Tries:** make a puzzle from your own 4–7 letter word and share the link. Everyone gets six guesses; green is the right letter in the right spot, yellow is in the word but elsewhere. The link also shows a **results board** with everyone's score and pattern. The word stays on the server: guesses are scored there, finished results are re-scored there, and the word is only sent once you've finished. Puzzles are kept in Redis for 60 days (memory without Redis). Any letters are accepted as guesses; there's no dictionary check.
+- **Mini Grid:** 10 small crosswords (5×5 and 4×4). Tap a cell to pick it, tap again to switch direction, type to fill, and arrows, backspace, Enter and Tab work. There's Check / Reveal, a timer, and a best time per puzzle (help doesn't count). The grids were filled by a search over a list of common English words, so every across and down entry is an everyday word; the clues are hand-written.
 
 ## Themes
 
@@ -262,7 +278,7 @@ src/
 
 ### Tests
 
-- `tests/unit/` (`bun test`, about 0.2 s) covers the room core: joining, rejoin PIN lockout, admin password, host handover, drink confirmations, reactions, and a persistence round-trip. It also covers the game rules: disabled cards, turn order, chained mates, Guys/Girls auto-resolve, Jack rule votes, Higher or Lower streaks, Trivia scoring, Never Have I Ever reveals and Truth or Drink turns.
+- `tests/unit/` (`bun test`, 32 tests in about 0.2 s) covers Spotlight packs and anonymous results, Punchline face-offs and scoring, Bluff truth/lie scoring, Odd One Out secrecy and guesses, switching games, Six Tries scoring and secrecy, and Mini Grid clue coverage. It also covers the room core: joining, rejoin PIN lockout, admin password, host handover, drink confirmations, reactions, and a persistence round-trip. It also covers the game rules: disabled cards, turn order, chained mates, Guys/Girls auto-resolve, Jack rule votes, Higher or Lower streaks, Trivia scoring, Never Have I Ever reveals and Truth or Drink turns.
 - `tests/e2e/` (Playwright, mobile viewport) runs against the production standalone build. Two separate browser contexts join a Ring of Fire room and play, checking that drink alerts gate the next card. A third test unlocks TV admin controls with the password. If Playwright's browser isn't installed yet, run `bunx playwright install chromium` once.
 
 ### Adding a room game

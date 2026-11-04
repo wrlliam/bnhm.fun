@@ -4,7 +4,7 @@ import { expect, type Page, test } from "@playwright/test";
 async function join(page: Page, name: string) {
   await page.locator("#join-name").fill(name);
   await page.getByRole("button", { name: "Join", exact: true }).click();
-  await expect(page.getByText(/You.re in!/)).toBeVisible();
+  await expect(page.getByText(/You.re in/)).toBeVisible();
 }
 
 /** Tokens this tab holds for the room (player token per tab, host token per browser). */
@@ -16,8 +16,11 @@ test("two phones play Ring of Fire: join, start, draw, drink alerts gate the nex
   const guest = await (await browser.newContext()).newPage();
 
   // host starts a room and joins it
+  // pick the game on the home page, then start it from its setup page
   await host.goto("/");
-  await host.locator("li", { hasText: "Ring of Fire" }).getByRole("button", { name: "Start a room" }).click();
+  await host.getByRole("link", { name: /Ring of Fire/ }).click();
+  await expect(host).toHaveURL(/\/new\/ring-of-fire$/);
+  await host.getByRole("button", { name: "Start a room" }).click();
   await expect(host).toHaveURL(/\/r\/[A-Z]{4}$/);
   const code = host.url().slice(-4);
   await join(host, "Host");

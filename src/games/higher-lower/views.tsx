@@ -59,7 +59,7 @@ export function HlPlayer({ room, token, hostToken, status }: Props) {
 
           {g.bonusFrom === room.me ? (
             <div className="rounded-2xl border-2 border-hit bg-surface p-4">
-              <p className="font-medium">Equal call! Pick who drinks 3:</p>
+              <p className="font-medium">Equal call. Pick who drinks 3</p>
               <div className="mt-3">
                 <PlayerPicker room={room} exclude={[room.me ?? ""]} onPick={(id) => act(room, token, null, { type: "bonus", playerId: id })} />
               </div>
@@ -92,7 +92,7 @@ export function HlPlayer({ room, token, hostToken, status }: Props) {
                 <strong className="font-hand text-3xl">{who(room, g.turnPlayerId)?.name}</strong> is calling…
               </p>
             ))}
-          {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">Deck finished!</h2>}
+          {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">Deck finished</h2>}
         </div>
       )}
     </RoomShell>
@@ -132,7 +132,7 @@ export function HlTv({ room, hostToken }: { room: RoomView; hostToken: string | 
         <LastResult room={room} big />
         {g.bonusFrom && <p className="text-3xl">{who(room, g.bonusFrom)?.name} nailed an equal and is picking who drinks 3!</p>}
         <WaitingForDrinks room={room} hostToken={hostToken} big />
-        {g.status === "finished" && <h2 className="font-hand text-8xl font-bold">Deck finished!</h2>}
+        {g.status === "finished" && <h2 className="font-hand text-8xl font-bold">Deck finished</h2>}
       </div>
     </div>
   );

@@ -168,7 +168,7 @@ function RideTheBus() {
           <div key={moves.length} className="pop">
             {last.offBus ? (
               <h2 className="font-hand text-5xl font-bold text-hit">
-                {last.who ? `${last.who} is off the bus!` : "Off the bus!"}
+                {last.who ? `${last.who} is off the bus!` : "Off the bus"}
               </h2>
             ) : last.correct ? (
               <h2 className="font-hand text-4xl font-bold text-hit">Correct</h2>

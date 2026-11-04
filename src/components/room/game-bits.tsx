@@ -26,7 +26,7 @@ export function GameLobby({
   return (
     <div className="pop space-y-6">
       <div>
-        <h2 className="font-hand text-5xl font-bold">You&rsquo;re in!</h2>
+        <h2 className="font-hand text-5xl font-bold">You&rsquo;re in</h2>
         <p className="mt-1 text-faint">
           {room.isHost ? "Start when everyone has joined." : "Waiting for the host to start the game."}
         </p>
@@ -68,7 +68,11 @@ export function Countdown({ deadline, big = false }: { deadline: number | null; 
       } ${big ? "text-4xl" : "text-sm"}`}
       aria-live="off"
     >
-      ⏱ {left}s
+      <svg viewBox="0 0 24 24" className={big ? "size-8" : "size-4"} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2 2M9 2h6" />
+      </svg>
+      {left}s
     </span>
   );
 }

@@ -238,3 +238,18 @@ export async function resetAdmin(code: string, hostToken?: string) {
   if (!res.ok) throw new Error(res.error);
   saveHostToken(code, res.hostToken as string);
 }
+
+/** The remembered profile name, safe for SSR (empty on the server). */
+export function useProfileName() {
+  return useSyncExternalStore(
+    subscribeStorage,
+    () => {
+      try {
+        return (JSON.parse(localStorage.getItem("profile") ?? "{}") as { name?: string }).name ?? "";
+      } catch {
+        return "";
+      }
+    },
+    () => "",
+  );
+}

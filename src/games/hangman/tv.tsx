@@ -33,7 +33,7 @@ export function HangmanTv({ room, hostToken }: { room: RoomView; hostToken: stri
               )}
               {finished && (
                 <h2 className={`pop mt-8 font-hand text-8xl font-bold ${g.status === "won" ? "text-hit" : "text-miss"}`}>
-                  {g.status === "won" ? "Solved!" : `Hanged — ${g.word}`}
+                  {g.status === "won" ? "Solved" : `Hanged — ${g.word}`}
                 </h2>
               )}
             </div>

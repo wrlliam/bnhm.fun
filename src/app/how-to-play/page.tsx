@@ -38,7 +38,7 @@ function Section({ title, note, guides }: { title: string; note: string; guides:
           <li key={g.slug}>
             <Link
               href={`/how-to-play/${g.slug}`}
-              className="block h-full rounded-xl border-2 border-ink bg-surface p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              className="block h-full rounded-xl border-2 border-ink bg-surface p-4 transition-colors hover:border-ink/60"
             >
               <span className="font-hand text-3xl font-bold">{g.name}</span>
               <span className="mt-1 block text-sm text-faint">{g.tagline}</span>

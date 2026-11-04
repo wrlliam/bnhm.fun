@@ -186,7 +186,7 @@ function CopyButton({ query, label, primary }: { query: string; label: string; p
           : "text-sm text-faint underline underline-offset-4 hover:text-ink"
       }
     >
-      {copied ? "Copied!" : label}
+      {copied ? "Copied" : label}
     </button>
   );
 }

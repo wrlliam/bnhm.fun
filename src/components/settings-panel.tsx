@@ -69,7 +69,7 @@ export function SettingsPanel() {
                   aria-checked={theme === t.id}
                   onClick={() => setTheme(t.id)}
                   className={`rounded-xl p-0.5 text-left transition ${
-                    theme === t.id ? "ring-2 ring-hit ring-offset-2 ring-offset-surface" : "hover:-translate-y-0.5"
+                    theme === t.id ? "ring-2 ring-hit ring-offset-2 ring-offset-surface" : "hover:ring-1 hover:ring-ink/20"
                   }`}
                 >
                   <ThemePreview id={t.id} name={t.name} hint={t.hint} />
@@ -140,7 +140,7 @@ export function SettingsPanel() {
         aria-expanded={open}
         aria-label="Settings"
         title="Settings"
-        className="flex size-11 items-center justify-center rounded-full border-2 border-ink/15 bg-surface text-ink shadow-lg transition hover:scale-105"
+        className="flex size-11 items-center justify-center rounded-full border-2 border-ink/15 bg-surface text-ink shadow-lg transition-colors hover:bg-ink/5"
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="3" />
@@ -154,7 +154,7 @@ export function SettingsPanel() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-5">
-      <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-faint">{title}</h3>
+      <h3 className="mb-2 text-xs font-medium text-faint">{title}</h3>
       <div className="space-y-2">{children}</div>
     </section>
   );
@@ -213,7 +213,7 @@ function Toggle({
       </span>
       <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-hit" : "bg-ink/20"}`}>
         <span
-          className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-all ${checked ? "left-[1.375rem]" : "left-0.5"}`}
+          className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-[left] ${checked ? "left-[1.375rem]" : "left-0.5"}`}
         />
       </span>
     </button>

@@ -146,7 +146,7 @@ export function HangmanPlayer({ room, token, hostToken }: Props) {
             {finished ? (
               <div className="pop mt-8">
                 <h2 className="font-hand text-5xl font-bold">
-                  {g.status === "won" ? <span className="text-hit">Solved it!</span> : <span className="text-miss">Hanged.</span>}
+                  {g.status === "won" ? <span className="text-hit">Solved it</span> : <span className="text-miss">Hanged.</span>}
                 </h2>
                 <p className="mt-1 text-faint">
                   The word was <span className="font-mono text-ink">{g.word}</span>

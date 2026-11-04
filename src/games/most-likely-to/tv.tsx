@@ -81,7 +81,7 @@ export function MltTv({ room, hostToken }: { room: RoomView; hostToken: string |
         </div>
       )}
 
-      {g.status === "finished" && <h2 className="font-hand text-8xl font-bold">That&rsquo;s every card!</h2>}
+      {g.status === "finished" && <h2 className="font-hand text-8xl font-bold">That&rsquo;s every card</h2>}
     </div>
   );
 }

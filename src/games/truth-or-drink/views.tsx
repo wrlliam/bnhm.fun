@@ -67,7 +67,7 @@ export function TodPlayer({ room, token, hostToken, status }: Props) {
           )}
         </div>
       )}
-      {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">That&rsquo;s every question!</h2>}
+      {g.status === "finished" && <h2 className="font-hand text-5xl font-bold">That&rsquo;s every question</h2>}
     </RoomShell>
   );
 }
@@ -82,7 +82,7 @@ export function TodTv({ room, hostToken }: { room: RoomView; hostToken: string |
         <p className="mt-4 max-w-2xl text-2xl">Join on your phone. On your turn: answer honestly, or drink to dodge.</p>
       </div>
     );
-  if (g.status === "finished") return <h2 className="font-hand text-8xl font-bold">That&rsquo;s every question!</h2>;
+  if (g.status === "finished") return <h2 className="font-hand text-8xl font-bold">That&rsquo;s every question</h2>;
   return (
     <div key={g.number} className="pop space-y-8">
       <div className="flex items-center gap-5">

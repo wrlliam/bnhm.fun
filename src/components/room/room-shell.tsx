@@ -61,7 +61,7 @@ export function RoomShell({
             }}
             className="text-xs text-faint"
           >
-            {copied ? "Invite link copied!" : <>Code <span className="font-mono font-bold text-ink">{room.code}</span> · tap to copy invite</>}
+            {copied ? "Invite link copied" : <>Code <span className="font-mono font-bold text-ink">{room.code}</span> · tap to copy invite</>}
           </button>
         </div>
         {status !== "live" && (

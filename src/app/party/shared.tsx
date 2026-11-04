@@ -152,7 +152,7 @@ export function GameToolbar({ game, left }: { game: ReturnType<typeof useDeckGam
         }}
         className="rounded-md border-2 border-ink px-3 py-1.5 font-medium transition hover:bg-ink hover:text-paper"
       >
-        {copied ? "Copied!" : "Copy game link"}
+        {copied ? "Copied" : "Copy game link"}
       </button>
       <button
         onClick={game.undo}

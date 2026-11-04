@@ -84,7 +84,7 @@ export default function PartyPage() {
           <li key={g.href}>
             <Link
               href={g.href}
-              className="group flex flex-col rounded-xl border-2 border-ink bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="group flex flex-col rounded-xl border-2 border-ink bg-surface p-5 shadow-sm transition-colors hover:border-ink/60"
             >
               <span className={`text-4xl ${g.suit === "♥" || g.suit === "♦" ? "text-miss" : ""}`}>{g.suit}</span>
               <span className="mt-4 font-hand text-3xl font-bold">{g.name}</span>

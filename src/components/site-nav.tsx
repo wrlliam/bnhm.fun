@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 const LINKS = [
   { href: "/", label: "Play", match: (p: string) => p === "/" || p.startsWith("/new") },
@@ -10,13 +11,24 @@ const LINKS = [
   { href: "/how-to-play", label: "How to play", match: (p: string) => p.startsWith("/how-to-play") },
 ];
 
-/** Top navigation for every page outside a room. */
+/** Top navigation for every page outside a room. The active tab needs the URL, so it streams in. */
 export function SiteNav() {
-  const path = usePathname();
+  return (
+    <Suspense fallback={<Nav path={null} />}>
+      <NavWithPath />
+    </Suspense>
+  );
+}
+
+function NavWithPath() {
+  return <Nav path={usePathname()} />;
+}
+
+function Nav({ path }: { path: string | null }) {
   return (
     <nav aria-label="Main" className="mb-8 flex items-center gap-1 overflow-x-auto text-sm">
       {LINKS.map((l) => {
-        const on = l.match(path);
+        const on = path !== null && l.match(path);
         return (
           <Link
             key={l.href}
