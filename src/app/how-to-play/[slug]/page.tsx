@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { guideBySlug, GUIDES } from "@/lib/guides";
+import { gameMetadata } from "@/lib/seo";
 import { RANK_ORDER, RULES } from "@/lib/ring-of-fire";
 
 export function generateStaticParams() {
@@ -9,8 +10,8 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/how-to-play/[slug]">): Promise<Metadata> {
-  const g = guideBySlug((await params).slug);
-  return { title: g ? `How to play ${g.name}` : "How to play" };
+  const { slug } = await params;
+  return gameMetadata(slug, { path: `/how-to-play/${slug}`, prefix: "How to play" });
 }
 
 export default async function GuidePage({ params }: PageProps<"/how-to-play/[slug]">) {

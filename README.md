@@ -30,7 +30,7 @@ Built with **Next.js 16**, **React 19**, **Tailwind CSS 4** and **Bun**. There's
 - **12 games in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
 - **Rules for every game** at `/how-to-play`, linked from each game.
 - **9 themes:** Notebook, Clean, Sunset, Candy, Night, Casino, Chalkboard, Ocean and Arcade, with live previews.
-- **One-command hosting:** Docker, an optional Caddy proxy with automatic HTTPS, or an instant public link through a Cloudflare tunnel. Rate limits and security headers are built in.
+- **One-command hosting:** Docker behind your own reverse proxy (a Caddy snippet is included), or an instant public link through a Cloudflare tunnel. Rate limits and security headers are built in.
 
 > The drinking games are for adults. Anyone can swap drinks for water or forfeits, and look after each other.
 
@@ -136,7 +136,6 @@ All settings are optional. Copy `.env.example` to `.env` to change them.
 | Command                  | What you get                                                                    |
 | ------------------------ | ------------------------------------------------------------------------------- |
 | `bun run docker:up`      | Production app on <http://localhost:3000> (or `PORT`)                           |
-| `bun run docker:proxy`   | The same, plus a Caddy reverse proxy on ports 80/443, with automatic HTTPS when `DOMAIN` is set |
 | `bun run docker:tunnel`  | Public `https://….trycloudflare.com` URL via Cloudflare; no domain, account or port-forwarding needed. Prints the URL |
 | `bun run docker:dev`     | Dev server with hot reload; your source is mounted into the container           |
 | `bun run docker:logs`    | Follow the app logs                                                              |
@@ -149,21 +148,27 @@ These wrap plain `docker compose` commands (see `package.json`).
 | File                      | Purpose                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------------- |
 | `Dockerfile`              | Multi-stage build: Bun installs and builds, then Next's standalone server runs on `node:22-alpine` as a non-root user |
-| `docker-compose.yml`      | `app` service (health check, log rotation, restart policy) plus an optional `proxy` service (Caddy) |
+| `docker-compose.yml`      | `app` service (health check, log rotation, restart policy) plus an optional `tunnel` service (Cloudflare) |
 | `docker-compose.dev.yml`  | Hot-reload dev container                                                                     |
-| `docker/Caddyfile`        | Proxy config. The live-update stream (`/api/rooms/*/stream`) is never buffered or compressed |
+| `docker/Caddyfile.example` | Site block to paste into **your own** Caddy. The live-update stream (`/api/rooms/*/stream`) is never buffered or compressed |
 | `docker/Dockerfile.dev`   | Dev image                                                                                    |
-| `.env.example`            | `PORT`, `DOMAIN`, `ALLOWED_DEV_ORIGINS`                                                      |
+| `.env.example`            | `PORT`, `BIND`, `NEXT_PUBLIC_SITE_URL`, `ALLOWED_DEV_ORIGINS`                                |
 
 **Making it public: pick one**
 
 1. **Instant public link:** `bun run docker:tunnel` prints a `https://random-words.trycloudflare.com` URL that anyone can open. It's good for a party at someone else's house, and the URL changes each time. Quick tunnels buffer live streams, so the app automatically falls back to polling every 1.5 s. It's tested and works, just slightly less instant.
 2. **Your own domain via Cloudflare:** create a named tunnel in the Cloudflare dashboard and swap the `tunnel` service's command for `tunnel --no-autoupdate run --token <token>`. That gives a permanent URL with full live streaming.
-3. **Your own server:** see below.
+3. **Your own server behind your existing Caddy:** see below.
 
-**Hosting on a server with HTTPS:** point a domain at the server, set `DOMAIN=games.example.com` in `.env`, and run `bun run docker:proxy`. Caddy fetches and renews certificates automatically. Ports 80 and 443 must be reachable.
+**Behind your existing Caddy:** the compose file only runs the app; HTTPS is your proxy's job.
 
-**Health check:** `GET /api/health` returns `{ ok, rooms, uptime }`. Docker uses it to mark the container healthy, and the proxy waits for it before starting.
+1. In `.env`, set `BIND=127.0.0.1` if Caddy runs on the same machine, so port 3000 isn't open to the internet. Also set `NEXT_PUBLIC_SITE_URL=https://your.domain`.
+2. Run `bun run docker:up`.
+3. Paste the site block from [`docker/Caddyfile.example`](docker/Caddyfile.example) into your Caddyfile. Change the domain, and the upstream if needed (`localhost:3000` for Caddy on the same host; the container name if Caddy is in Docker on a shared network). Then run `caddy reload`.
+
+The important part is `flush_interval -1` on `/api/rooms/*/stream`, which keeps live updates instant. Without it, phones still work but drop back to polling. Caddy already sends `X-Forwarded-For`, which the rate limits use to see real client IPs.
+
+**Health check:** `GET /api/health` returns `{ ok, rooms, uptime }`. Docker uses it to mark the container healthy, and the tunnel waits for it before starting.
 
 **Dev container and phones:** inside Docker, the dev server can't see your computer's Wi-Fi IP. Set `ALLOWED_DEV_ORIGINS=192.168.x.x` (your IP) in `.env` so phones can load it. The production image doesn't need this.
 
@@ -180,7 +185,7 @@ These wrap plain `docker compose` commands (see `package.json`).
 | Screens per room | 64 |
 | Request body | 200 KB |
 
-Security headers are set (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), and `X-Powered-By` is removed. Client IPs come from `CF-Connecting-IP` / `X-Forwarded-For`, so keep the app behind Caddy or the tunnel rather than exposing port 3000 directly.
+Security headers are set (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), and `X-Powered-By` is removed. Client IPs come from `CF-Connecting-IP` / `X-Forwarded-For`, so keep the app behind your proxy or the tunnel (with `BIND=127.0.0.1` when the proxy is on the same host) rather than exposing port 3000 directly.
 
 > **Run exactly one `app` container.** Rooms and live connections live in server memory, so extra replicas would split players across instances, and a restart clears open rooms. The pass-the-phone games are unaffected, because their state lives in the URL.
 
@@ -233,18 +238,28 @@ Make `src/app/party/<name>/page.tsx` that renders `<PromptGame prompts={[...]} p
 
 Rooms and their live connections live in one process. To run several instances, move room state into a shared store such as Redis and fan out change notifications through Redis pub/sub, so each instance can push to the streams it holds.
 
-## Branding
+## Branding & SEO
+
+The pages themselves carry no logo. The brand appears in the browser tab, link previews, search results and the home-screen icon.
 
 | Asset | Where |
 | --- | --- |
-| Logo mark: two fanned cards with a heart | `docs/logo.svg` (README and favicon only; not shown on the pages) |
-| Favicon | `src/app/icon.svg` |
+| Logo mark: two fanned cards with a heart | `src/lib/brand-art.ts` (source SVG); copy at `docs/logo.svg` |
+| Favicon: SVG for modern browsers, plus `favicon.ico` (16/32/48) | `src/app/icon.svg`, `src/app/favicon.ico` |
+| App icons 192 / 512, and a maskable 512 for Android | `public/icon-*.png` |
 | Apple touch icon (180 px) | `src/app/apple-icon.tsx`, generated with `next/og` |
-| Social share image (1200×630) | `src/app/opengraph-image.tsx`, generated; copy at `docs/banner.png` |
-| Web app manifest (add to home screen) | `src/app/manifest.ts` |
-| Name, tagline, description (page metadata) | `BRAND` in `src/lib/brand.ts` |
+| Share image (1200×630) | `src/app/opengraph-image.tsx`, generated; copy at `docs/banner.png` |
+| Web app manifest (install / add to home screen, with shortcuts) | `src/app/manifest.ts` |
+| Name, title, description, keywords, colours | `src/lib/brand.ts` |
 
-The pages themselves carry no logo. The brand appears in the browser tab (title and favicon), in link previews, and on the home-screen icon. The favicon and share image use the Notebook palette: ink `#1f2a44`, paper `#f7f3e8`, accent `#c2412d`.
+Regenerate the PNG and ICO icons after changing the mark with `bun run icons`. Colours: ink `#1f2a44`, paper `#f7f3e8`, accent `#c2412d`.
 
-Set `NEXT_PUBLIC_SITE_URL` (default `https://bnhm.fun`) so share links and preview images point at your own domain.
+**SEO**
 
+- **Every page has its own title, description, keywords and canonical URL.** Game and how-to-play pages are built from each game's guide (`src/lib/seo.ts`), e.g. "How to play Pyramid · bnhm.fun".
+- **Open Graph and Twitter cards** with the large share image on every page, locale `en_GB`.
+- **`/sitemap.xml`** lists the home page, every how-to-play page and every playable game. **`/robots.txt`** points to it and keeps crawlers out of `/r/`, `/tv/` and `/api/`.
+- **Room and TV pages are `noindex`**, since they're private and short-lived.
+- **JSON-LD structured data** (`WebSite` + free `WebApplication`) in the root layout.
+
+Set `NEXT_PUBLIC_SITE_URL` (default `https://bnhm.fun`) so canonical URLs, the sitemap and share images use your domain. It's baked in at build time and passed through the Docker build.

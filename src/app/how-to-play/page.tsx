@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import { SHARE } from "@/lib/seo";
 import Link from "next/link";
 import { GUIDES } from "@/lib/guides";
 
-export const metadata: Metadata = { title: "How to play" };
+export const metadata: Metadata = {
+  title: "How to play: rules for every game",
+  description:
+    "Step-by-step rules for Ring of Fire, Most Likely To, Hangman, Ride the Bus, Pyramid, Higher or Lower, Beat the Dealer, Horse Race and more.",
+  alternates: { canonical: "/how-to-play" },
+  openGraph: { ...SHARE.openGraph, url: "/how-to-play" },
+  twitter: SHARE.twitter,
+};
 
 export default function HowToPlayIndex() {
   const room = GUIDES.filter((g) => g.modes.some((m) => m.room));
