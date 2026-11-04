@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { PlayingCard } from "@/components/playing-card";
 import { AdminAccess } from "@/components/room/admin-access";
 import { Avatar } from "@/components/room/avatar";
 import { WaitingForDrinks } from "@/components/room/drink-alert";
 import { act, BigButton, openTv, RoomShell } from "@/components/room/room-shell";
+import { buzz, playSound } from "@/lib/feedback";
 import type { RoomView, StreamStatus } from "@/lib/rooms/client";
 import { RULES } from "@/lib/ring-of-fire";
 import { CardSettings, Chooser, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
@@ -117,6 +119,17 @@ function InGame({ room, token, hostToken }: RofProps) {
   const drinksPending = room.waitingOn.length > 0;
   const myTurn = g.status === "playing" && g.turnPlayerId === me && !cur?.pending;
   const iChoose = !!cur?.pending && cur.by === me;
+  const canDrawNow = myTurn && !drinksPending;
+
+  // chime + buzz the moment it becomes your go
+  const wasMyGo = useRef(false);
+  useEffect(() => {
+    if (canDrawNow && !wasMyGo.current) {
+      playSound("turn");
+      buzz(80);
+    }
+    wasMyGo.current = canDrawNow;
+  }, [canDrawNow]);
 
   return (
     <div className="space-y-6">

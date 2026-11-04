@@ -29,7 +29,8 @@ Built with **Next.js 16**, **React 19**, **Tailwind CSS 4** and **Bun**. There's
 - **Admin from any device:** each room gets a secure admin password, so you can unlock host controls on a TV or a second phone.
 - **12 games in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
 - **Rules for every game** at `/how-to-play`, linked from each game.
-- **9 themes:** Notebook, Clean, Sunset, Candy, Night, Casino, Chalkboard, Ocean and Arcade, with live previews.
+- **Settings per device:** text size, keep screen awake, vibration, sounds, animations, and Drink/Forfeit wording for non-drinking groups.
+- **8 themes:** Notebook, Clean, Sunset, Candy, Night, Chalkboard, Ocean and Arcade, with live previews.
 - **One-command hosting:** Docker behind your own reverse proxy (a Caddy snippet is included), or an instant public link through a Cloudflare tunnel. Rate limits and security headers are built in.
 
 > The drinking games are for adults. Anyone can swap drinks for water or forfeits, and look after each other.
@@ -111,9 +112,25 @@ Enter player names (up to 10) and cards per hand, then **Deal**. You get:
 
 Anyone who opens the same link sees the same deal. Private links keep people honest at the table, but they aren't truly secret: the table link reveals every hand.
 
+## Settings
+
+The ⚙ button in the bottom-right corner of every screen opens **Settings**. Everything is saved on that device only, and nothing is sent to the server.
+
+| Setting | What it does | Default |
+| --- | --- | --- |
+| **Theme** | Live previews of all 8 themes (below) | Notebook |
+| **Text size** | Normal, Large (112.5%) or Extra large (125%); scales the whole UI, handy on a TV across the room | Normal |
+| **Alerts say** | *Drink!* (sips) or *Forfeit!* (points), for groups that aren't drinking | Drink |
+| **Keep screen awake** | Holds a screen wake lock so phones and the TV don't sleep mid-game | On |
+| **Vibrate** | Buzz when you have to drink or it's your turn | On |
+| **Sounds** | A short synthesised chime for drink alerts and your turn (no audio files) | On |
+| **Animations** | Card flips, pop-ins and shakes. "Reduce motion" in your system settings also turns these off | On |
+
+Text size and animations are applied before the first paint, like the theme. The code is in `src/lib/settings.ts` (hooks), `src/lib/settings-shared.ts` (defaults and the pre-paint script) and `src/components/settings-panel.tsx`.
+
 ## Themes
 
-The palette button in the bottom-right corner opens live previews of every theme. The choice is per device, remembered, and applied before the first paint, so there's no flash.
+Pick a theme in **Settings**, which shows live previews. The choice is per device, remembered, and applied before the first paint, so there's no flash.
 
 | Theme | Look | Heading font |
 | --- | --- | --- |
@@ -122,7 +139,6 @@ The palette button in the bottom-right corner opens live previews of every theme
 | **Sunset** | Warm peach-to-coral gradient, rounder corners | Pacifico |
 | **Candy** | Pastel bubbles, polka dots, pillowy corners, bouncy buttons; rounded body font too | Fredoka + Baloo 2 |
 | **Night** | Dark with neon pink and green; glowing headings | Fredoka |
-| **Casino** | Green felt with a vignette, cream and gold | Playfair Display |
 | **Chalkboard** | Dusty green board with chalk smudges and a wooden frame | Gochi Hand |
 | **Ocean** | Deep blue, teal glow, soft waves | Baloo 2 |
 | **Arcade** | Black grid, CRT scanlines, pixel headings, square corners, monospace body | VT323 + Geist Mono |

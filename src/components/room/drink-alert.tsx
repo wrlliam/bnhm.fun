@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { buzz, playSound } from "@/lib/feedback";
 import { type RoomView, roomAction } from "@/lib/rooms/client";
+import { alertWords, useSettings } from "@/lib/settings";
 import { Avatar } from "./avatar";
 
 /**
@@ -14,10 +16,14 @@ export function DrinkAlert({ room, token }: { room: RoomView; token: string }) {
   const [sent, setSent] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
   const lastCount = useRef(0);
+  const words = alertWords(useSettings().wording);
 
-  // buzz when a new drink lands
+  // buzz + chime when a new drink lands (each respects its setting)
   useEffect(() => {
-    if (mine.length > lastCount.current) navigator.vibrate?.([200, 80, 200]);
+    if (mine.length > lastCount.current) {
+      buzz([200, 80, 200]);
+      playSound("drink");
+    }
     lastCount.current = mine.length;
   }, [mine.length]);
 
@@ -31,10 +37,8 @@ export function DrinkAlert({ room, token }: { room: RoomView; token: string }) {
       aria-label="You have to drink"
       className="pop fixed inset-0 z-50 flex flex-col items-center justify-center bg-miss p-8 text-center text-paper"
     >
-      <p className="font-hand text-[22vw] font-bold leading-none sm:text-9xl">Drink!</p>
-      <p className="mt-4 text-3xl font-bold">
-        {d.amount === 0 ? "The whole King's cup" : d.amount === 1 ? "1 sip" : `${d.amount} sips`}
-      </p>
+      <p className="font-hand text-[22vw] font-bold leading-none sm:text-9xl">{words.shout}</p>
+      <p className="mt-4 text-3xl font-bold">{words.amount(d.amount)}</p>
       <p className="mt-4 max-w-md text-lg">{d.reason}</p>
       <button
         disabled={busy}
@@ -47,7 +51,7 @@ export function DrinkAlert({ room, token }: { room: RoomView; token: string }) {
         }}
         className="mt-10 w-full max-w-xs rounded-2xl bg-paper py-5 text-2xl font-bold text-miss shadow-lg transition active:scale-95 disabled:opacity-60"
       >
-        Done — I drank
+        {words.done}
       </button>
       <p className="mt-4 text-sm opacity-80">
         The next card waits until you tap Done{queue.length > 1 ? ` · ${queue.length - 1} more after this` : ""}
@@ -66,6 +70,7 @@ export function WaitingForDrinks({
   hostToken: string | null;
   big?: boolean;
 }) {
+  const words = alertWords(useSettings().wording);
   const people = room.waitingOn.map((id) => room.players.find((p) => p.id === id)).filter((p) => !!p);
   if (!people.length) return null;
   const names = people.map((p) => (p.id === room.me ? "you" : p.name));
@@ -79,7 +84,7 @@ export function WaitingForDrinks({
         ))}
       </span>
       <p className="flex-1">
-        Waiting for <strong>{list}</strong> to drink…
+        Waiting for <strong>{list}</strong> to {words.verb}…
         <span className={`block text-faint ${big ? "text-base" : "text-xs"}`}>The next card unlocks once everyone taps Done.</span>
       </p>
       {room.isHost && hostToken && (
