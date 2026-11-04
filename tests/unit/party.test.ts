@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { seededShuffle } from "@/lib/cards";
-import { entries, MINI_PUZZLES } from "@/lib/minigrid";
 import { BLUFF_FACTS } from "@/lib/party-content";
-import { createPuzzle, getPuzzle, publicPuzzle, score, submitResult } from "@/lib/puzzles";
 import type { BluffState } from "@/lib/rooms/games/bluff";
 import type { OddState } from "@/lib/rooms/games/odd-one-out";
 import type { PunchState } from "@/lib/rooms/games/punchline";
@@ -124,34 +122,5 @@ describe("switching games", () => {
     expect(room.kind).toBe("spotlight");
     expect(room.players).toHaveLength(3);
     expect(() => perform(code, { type: "switchGame", kind: "nope", hostToken: room.hostToken })).toThrow("Unknown game");
-  });
-});
-
-describe("Six Tries", () => {
-  test("scores letters like the classic rules, including repeated letters", () => {
-    expect(score("CRANE", "CRANE")).toBe("ggggg");
-    expect(score("SLATE", "CRANE")).toBe("xxgxg");
-    expect(score("EERIE", "SPEED")).toBe("yyxxx"); // only two E's to find
-    expect(score("LLAMA", "HELLO")).toBe("yyxxx");
-  });
-
-  test("the word stays secret, results are re-scored, unfinished games are refused", async () => {
-    const p = await createPuzzle("plate", "Will");
-    expect(JSON.stringify(publicPuzzle(await getPuzzle(p.id)))).not.toContain("PLATE");
-    await expect(submitResult(p.id, "Ann", ["CRANE"])).rejects.toThrow("tries left");
-    const done = await submitResult(p.id, "Ann", ["CRANE", "PLATE", "STORM"]);
-    expect(done.word).toBe("PLATE");
-    expect(done.result).toMatchObject({ solved: true, tries: 2 });
-  });
-});
-
-describe("Mini Grid", () => {
-  test("every entry in every puzzle is clued, and every clue is used", () => {
-    for (const p of MINI_PUZZLES) {
-      const e = entries(p);
-      expect(e.every((x) => x.clue !== "?"), `puzzle ${p.id}`).toBe(true);
-      expect(e.filter((x) => x.dir === "across").length).toBe(Object.keys(p.across).length);
-      expect(e.filter((x) => x.dir === "down").length).toBe(Object.keys(p.down).length);
-    }
   });
 });

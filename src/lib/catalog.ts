@@ -213,8 +213,8 @@ export const GAMES_CATALOG: GameMeta[] = [
 export const gameMeta = (kind: string) => GAMES_CATALOG.find((g) => g.kind === kind);
 
 export const CATEGORIES = [
-  { id: "party", title: "Party games", hint: "Laughs, votes and bluffing; drinks optional" },
   { id: "drinking", title: "Drinking games", hint: "Phones buzz when it's your turn to drink" },
+  { id: "party", title: "Party games", hint: "Laughs, votes and bluffing; drinks optional" },
 ] as const;
 
 /** Default option values for a game, as the strings/booleans the settings action expects. */

@@ -117,12 +117,8 @@ export default function Home() {
         </section>
       ))}
 
-      <section className="mt-14 grid gap-3 sm:grid-cols-2">
-        <Link href="/solo" className="rounded-2xl border border-ink/10 bg-surface p-5 transition-colors hover:border-ink/30">
-          <span className="block font-hand text-3xl font-bold">Play on your own</span>
-          <span className="mt-1 block text-sm text-faint">Six Tries word puzzles you can share, and Mini Grid crosswords</span>
-        </Link>
-        <Link href="/party" className="rounded-2xl border border-ink/10 bg-surface p-5 transition-colors hover:border-ink/30">
+      <section className="mt-14">
+        <Link href="/party" className="block rounded-2xl border border-ink/10 bg-surface p-5 transition-colors hover:border-ink/30">
           <span className="block font-hand text-3xl font-bold">Just one phone?</span>
           <span className="mt-1 block text-sm text-faint">Pass-the-phone card games: Ride the Bus, Pyramid, Horse Race and more</span>
         </Link>

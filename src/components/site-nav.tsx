@@ -6,7 +6,6 @@ import { Suspense } from "react";
 
 const LINKS = [
   { href: "/", label: "Play", match: (p: string) => p === "/" || p.startsWith("/new") },
-  { href: "/solo", label: "Solo", match: (p: string) => p.startsWith("/solo") },
   { href: "/party", label: "One phone", match: (p: string) => p.startsWith("/party") || p.startsWith("/cards") },
   { href: "/how-to-play", label: "How to play", match: (p: string) => p.startsWith("/how-to-play") },
 ];
