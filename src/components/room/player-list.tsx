@@ -6,12 +6,14 @@ export function PlayerList({
   highlight,
   badge,
   onKick,
+  onMakeHost,
   size = 40,
 }: {
   room: RoomView;
   highlight?: string | null;
   badge?: (id: string) => React.ReactNode;
   onKick?: (id: string) => void;
+  onMakeHost?: (id: string) => void;
   size?: number;
 }) {
   return (
@@ -26,6 +28,14 @@ export function PlayerList({
           {!p.online && <span className="text-xs text-faint">away</span>}
           <span className="ml-auto flex items-center gap-2 text-sm">
             {badge?.(p.id)}
+            {onMakeHost && p.id !== room.hostPlayerId && (
+              <button
+                onClick={() => confirm(`Make ${p.name} the host? You'll lose host controls.`) && onMakeHost(p.id)}
+                className="text-xs text-faint underline underline-offset-2 hover:text-ink"
+              >
+                make host
+              </button>
+            )}
             {onKick && p.id !== room.me && (
               <button
                 onClick={() => confirm(`Remove ${p.name} from the room?`) && onKick(p.id)}

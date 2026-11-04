@@ -87,7 +87,7 @@ export function WaitingForDrinks({
         Waiting for <strong>{list}</strong> to {words.verb}…
         <span className={`block text-faint ${big ? "text-base" : "text-xs"}`}>The next card unlocks once everyone taps Done.</span>
       </p>
-      {room.isHost && hostToken && (
+      {room.isHost && (
         <button
           onClick={() => roomAction(room.code, { type: "ackAll", hostToken })}
           className="rounded-md border-2 border-ink/30 px-3 py-1 text-sm hover:border-ink"

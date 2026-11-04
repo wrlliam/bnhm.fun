@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { REACTIONS } from "./constants";
 
 /**
  * Room engine shared by every multiplayer game.
@@ -8,7 +9,14 @@ import { timingSafeEqual } from "node:crypto";
  * Server-Sent Events connection for that room.
  */
 
-export type GameKind = "hangman" | "ring-of-fire" | "most-likely-to";
+export type GameKind =
+  | "hangman"
+  | "ring-of-fire"
+  | "most-likely-to"
+  | "never-have-i-ever"
+  | "higher-lower"
+  | "truth-or-drink"
+  | "trivia";
 
 export type Player = {
   id: string; // public: safe to show to other players
@@ -18,6 +26,8 @@ export type Player = {
   avatarV: number;
   /** Optional, used by cards like Guys / Girls in Ring of Fire. */
   group: Group;
+  /** 4-digit code shown only to this player, used to reclaim their seat from another device. */
+  pin: string;
   joinedAt: number;
 };
 
@@ -47,6 +57,13 @@ export type Room<S = unknown> = {
   state: S;
   drinks: DrinkEvent[];
   seq: number;
+  /** Whole-game tallies per player (the drinks list is trimmed, these aren't). */
+  stats: Record<string, { sips: number; alerts: number }>;
+  reactions: { id: number; playerId: string; emoji: string; at: number }[];
+  /** Host can put the end-of-game recap on the TV. */
+  showRecap: boolean;
+  /** Seat-reclaim brute-force protection, per player. */
+  pinFails: Record<string, { count: number; lockedUntil: number }>;
   conns: Map<string, number>; // playerId → open streams
   polls: Map<string, number>; // playerId → last poll time (fallback when streaming is blocked)
   listeners: Set<() => void>;
@@ -119,6 +136,10 @@ export function createRoom<S>(kind: GameKind, init: () => S): Room<S> {
     state: init(),
     drinks: [],
     seq: 0,
+    stats: {},
+    reactions: [],
+    showRecap: false,
+    pinFails: {},
     conns: new Map(),
     polls: new Map(),
     listeners: new Set(),
@@ -189,6 +210,7 @@ export function addPlayer(room: Room, name: unknown, avatar: unknown, isHost: bo
     avatar: cleanAvatar(avatar),
     avatarV: 1,
     group: cleanGroup(group),
+    pin: String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, "0"),
     joinedAt: Date.now(),
   };
   room.players.push(player);
@@ -276,8 +298,46 @@ export function resetAdmin(room: Room) {
 
 export function resolveActor(room: Room, token: unknown, hostToken: unknown): Actor {
   const player = typeof token === "string" ? (room.players.find((p) => p.token === token) ?? null) : null;
-  const isHost = typeof hostToken === "string" && hostToken === room.hostToken;
+  // host = whoever holds the host token (TV/admin devices) OR the player who is host
+  const isHost =
+    (typeof hostToken === "string" && hostToken === room.hostToken) || (!!player && player.id === room.hostPlayerId);
   return { player, isHost };
+}
+
+/** Hand host rights to another player. Admin password + host token rotate, so old admin screens drop off. */
+export function makeHost(room: Room, playerId: string) {
+  if (!room.players.some((p) => p.id === playerId)) throw new GameError("No such player");
+  room.hostPlayerId = playerId;
+  resetAdmin(room);
+}
+
+/** Reclaim a seat from a new device with the player's PIN. Returns their token. */
+export function rejoin(room: Room, playerId: unknown, pin: unknown): string {
+  const p = room.players.find((x) => x.id === playerId);
+  if (!p) throw new GameError("That player isn't in this room");
+  const now = Date.now();
+  const f = (room.pinFails[p.id] ??= { count: 0, lockedUntil: 0 });
+  if (f.lockedUntil > now) throw new GameError(`Too many wrong PINs. Try again in ${Math.ceil((f.lockedUntil - now) / 1000)}s.`, 429);
+  if (String(pin ?? "").replace(/\D/g, "") !== p.pin) {
+    f.count++;
+    if (f.count >= 5) f.lockedUntil = now + Math.min(15 * 60_000, 30_000 * 2 ** (f.count - 5));
+    throw new GameError("Wrong PIN", 403);
+  }
+  room.pinFails[p.id] = { count: 0, lockedUntil: 0 };
+  return p.token;
+}
+
+const lastReact = new Map<string, number>();
+
+/** A floating emoji on the TV. Throttled per player. */
+export function react(room: Room, playerId: string, emoji: unknown) {
+  if (!REACTIONS.includes(emoji as (typeof REACTIONS)[number])) throw new GameError("Unknown reaction");
+  const key = `${room.code}:${playerId}`;
+  const now = Date.now();
+  if (now - (lastReact.get(key) ?? 0) < 700) throw new GameError("Easy — one at a time", 429);
+  lastReact.set(key, now);
+  room.reactions.push({ id: ++room.seq, playerId, emoji: emoji as string, at: now });
+  room.reactions = room.reactions.filter((r) => now - r.at < 8000).slice(-20);
 }
 
 export function playerName(room: Room, id: string) {
@@ -288,6 +348,9 @@ export function playerName(room: Room, id: string) {
 export function addDrink(room: Room, playerId: string, amount: number, reason: string) {
   if (!room.players.some((p) => p.id === playerId)) return;
   room.drinks.push({ id: ++room.seq, playerId, amount, reason, at: Date.now(), acked: false });
+  const st = (room.stats[playerId] ??= { sips: 0, alerts: 0 });
+  st.alerts++;
+  st.sips += amount === 0 ? 5 : amount; // a whole cup counts as 5
   if (room.drinks.length > 200) {
     // trim old history, but never drop a drink someone still has to confirm
     const drop = room.drinks.length - 200;
@@ -343,6 +406,11 @@ export function baseView(room: Room, viewer: Actor) {
       online: isOnline(room, p.id),
     })),
     drinks: room.drinks.slice(-40),
+    /** Your own rejoin PIN (never anyone else's). */
+    myPin: viewer.player?.pin ?? null,
+    stats: room.stats,
+    showRecap: room.showRecap,
+    reactions: room.reactions.filter((r) => Date.now() - r.at < 8000),
     /** Every unconfirmed drink (not just recent ones), so phones can show and games can wait. */
     pendingDrinks: pendingDrinks(room),
     waitingOn: waitingOn(room),
@@ -351,3 +419,41 @@ export function baseView(room: Room, viewer: Actor) {
 
 export type BaseView = ReturnType<typeof baseView>;
 export type PublicPlayer = BaseView["players"][number];
+
+// ---- timers ---------------------------------------------------------------
+
+const gt = globalThis as unknown as { __roomTimers?: Map<string, ReturnType<typeof setTimeout>> };
+const timers = (gt.__roomTimers ??= new Map());
+
+/** Run `fn` after `ms` (replacing any timer with the same key), then broadcast. */
+export function schedule(room: Room, key: string, ms: number, fn: () => void) {
+  cancelTimer(room, key);
+  const id = `${room.code}:${key}`;
+  timers.set(
+    id,
+    setTimeout(() => {
+      timers.delete(id);
+      if (rooms.get(room.code) !== room) return; // room ended or replaced
+      try {
+        fn();
+        changed(room);
+      } catch (e) {
+        console.error("room timer failed", e);
+      }
+    }, Math.max(0, ms)),
+  );
+}
+
+export function cancelTimer(room: Room, key: string) {
+  const id = `${room.code}:${key}`;
+  const t = timers.get(id);
+  if (t) clearTimeout(t);
+  timers.delete(id);
+}
+
+/** Shared turn order: players in join order, newcomers appended, leavers removed. */
+export function nextInOrder(order: string[], current: string | null) {
+  if (!order.length) return null;
+  const i = current ? order.indexOf(current) : -1;
+  return order[(i + 1) % order.length];
+}

@@ -78,13 +78,28 @@ export async function roomAction(
   code: string,
   body: Record<string, unknown>,
 ): Promise<{ ok: true; [k: string]: unknown } | { ok: false; error: string }> {
+  // attach this device's player + host tokens unless the caller set them explicitly
+  const stored = storedTokens(code);
+  const payload = {
+    ...body,
+    token: body.token ?? stored.token ?? undefined,
+    hostToken: body.hostToken ?? stored.host ?? undefined,
+  };
   const res = await fetch(`/api/rooms/${code}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({ error: "Network error" }));
   return res.ok ? { ok: true, ...data } : { ok: false, error: data.error ?? "Something went wrong" };
+}
+
+function storedTokens(code: string) {
+  if (typeof window === "undefined") return { token: null, host: null };
+  return {
+    token: sessionStorage.getItem(tokenKey(code)) ?? localStorage.getItem(tokenKey(code)),
+    host: localStorage.getItem(hostKey(code)),
+  };
 }
 
 export async function createRoom(kind: string) {
@@ -218,7 +233,7 @@ export async function unlockAdmin(code: string, password: string) {
 }
 
 /** New password + host token; every other admin device is signed out. */
-export async function resetAdmin(code: string, hostToken: string) {
+export async function resetAdmin(code: string, hostToken?: string) {
   const res = await roomAction(code, { type: "resetAdmin", hostToken });
   if (!res.ok) throw new Error(res.error);
   saveHostToken(code, res.hostToken as string);

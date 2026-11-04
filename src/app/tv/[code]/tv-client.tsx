@@ -3,8 +3,16 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AdminLogin } from "@/components/room/admin-access";
+import { JoinQr } from "@/components/room/join-qr";
+import { FloatingReactions } from "@/components/room/reactions";
+import { Recap } from "@/components/room/recap";
 import { Avatar } from "@/components/room/avatar";
 import { HangmanTv } from "@/games/hangman/tv";
+import { HlTv } from "@/games/higher-lower/views";
+import { NhieTv } from "@/games/never-have-i-ever/views";
+import { TriviaTv } from "@/games/trivia/views";
+import { TodTv } from "@/games/truth-or-drink/views";
+import { TvStartBar } from "./tv-start-bar";
 import { MltTv } from "@/games/most-likely-to/tv";
 import { RofTv } from "@/games/ring-of-fire/tv";
 import { useRoomStream, useRoomTokens } from "@/lib/rooms/client";
@@ -40,7 +48,10 @@ export function TvClient() {
           <p className="text-lg text-faint">
             Join at <span className="font-medium text-ink">{origin}</span> with code
           </p>
-          <p className="font-mono text-6xl font-bold tracking-[0.3em]">{room.code}</p>
+          <div className="flex items-center justify-end gap-5">
+            <p className="font-mono text-6xl font-bold tracking-[0.3em]">{room.code}</p>
+            <JoinQr code={room.code} size={112} />
+          </div>
           {status !== "live" && <p className="text-sm text-miss">Reconnecting…</p>}
           {room.isHost ? (
             <p className="text-xs text-faint">Admin controls on</p>
@@ -55,8 +66,22 @@ export function TvClient() {
           )}
         </div>
       </header>
+      <FloatingReactions room={room} />
+      {room.showRecap && (
+        <div className="pop fixed inset-0 z-30 overflow-y-auto bg-paper/95 px-16 py-12 backdrop-blur">
+          <h2 className="font-hand text-8xl font-bold">Game recap</h2>
+          <div className="mt-8 max-w-5xl">
+            <Recap room={room} big />
+          </div>
+        </div>
+      )}
       {room.kind === "ring-of-fire" && <RofTv {...props} />}
       {room.kind === "most-likely-to" && <MltTv {...props} />}
+      {room.kind === "never-have-i-ever" && <NhieTv {...props} />}
+      {room.kind === "higher-lower" && <HlTv {...props} />}
+      {room.kind === "truth-or-drink" && <TodTv {...props} />}
+      {room.kind === "trivia" && <TriviaTv {...props} />}
+      {room.isHost && <TvStartBar room={room} />}
       {room.kind === "hangman" && <HangmanTv {...props} />}
     </main>
   );

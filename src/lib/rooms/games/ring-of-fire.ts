@@ -1,6 +1,6 @@
 import { type Card, newSeed, shuffle } from "@/lib/cards";
 import { RANK_ORDER, RULES } from "@/lib/ring-of-fire";
-import { type Actor, addDrink, GameError, isOnline, requireDrinksDone, type GameModule, type Room, playerName } from "../core";
+import { type Actor, addDrink, cancelTimer, GameError, isOnline, requireDrinksDone, schedule, waitingOn, type GameModule, type Room, playerName } from "../core";
 
 type Rank = Card["rank"];
 
@@ -44,6 +44,9 @@ export type RofState = {
   vote: null | { ruleId: number; by: string; votes: Record<string, boolean> };
   questionMaster: string | null;
   kings: number;
+  /** Turn timer: seconds per turn (0 = off) and when the current turn runs out. */
+  turnSeconds: number;
+  deadline: number | null;
   log: { id: number; text: string }[];
   logSeq: number;
 };
@@ -130,6 +133,28 @@ function advance(room: R) {
     s.status = "finished";
     log(room, "The deck is empty. Game over!");
   }
+  armTurnTimer(room);
+}
+
+/** (Re)start the per-turn clock. Running out skips the turn (and any unfinished choice). */
+function armTurnTimer(room: R) {
+  const s = room.state;
+  cancelTimer(room, "turn");
+  s.deadline = null;
+  if (!s.turnSeconds || s.status !== "playing" || s.vote) return;
+  s.deadline = Date.now() + s.turnSeconds * 1000;
+  const key = `${s.turn}:${s.drawn.length}`;
+  schedule(room, "turn", s.turnSeconds * 1000, () => {
+    const st = room.state;
+    if (st.status !== "playing" || `${st.turn}:${st.drawn.length}` !== key || st.vote) return;
+    if (waitingOn(room).length) return armTurnTimer(room); // drinks first, then a fresh clock
+    if (st.current?.pending) {
+      st.current.pending = false;
+      st.current.outcome = "Time's up — no choice made.";
+    }
+    log(room, `Time's up for ${playerName(room, turnPlayer(st) ?? "")} — turn skipped`);
+    advance(room);
+  });
 }
 
 function resolveAuto(room: R, card: Card, by: string) {
@@ -197,6 +222,8 @@ function view(room: R) {
     kings: s.kings,
     kingsOn,
     log: s.log.slice(-15),
+    turnSeconds: s.turnSeconds,
+    deadline: s.deadline,
   };
 }
 
@@ -221,6 +248,8 @@ export const ringOfFire: GameModule<RofState> = {
     vote: null,
     questionMaster: null,
     kings: 0,
+    turnSeconds: 0,
+    deadline: null,
     log: [],
     logSeq: 0,
   }),
@@ -253,6 +282,12 @@ export const ringOfFire: GameModule<RofState> = {
   act(room: R, actor, action) {
     const s = room.state;
     switch (action.type) {
+      case "timer": {
+        requireHost(actor);
+        s.turnSeconds = [0, 15, 30, 60].includes(Number(action.turnSeconds)) ? Number(action.turnSeconds) : 0;
+        armTurnTimer(room);
+        return;
+      }
       case "settings": {
         requireHost(actor);
         const ranks = Array.isArray(action.disabled) ? action.disabled : [];
@@ -268,11 +303,13 @@ export const ringOfFire: GameModule<RofState> = {
         Object.assign(s, {
           ...ringOfFire.init(),
           disabled: s.disabled,
+          turnSeconds: s.turnSeconds,
           status: "playing",
           turnOrder: room.players.map((p) => p.id),
         });
         for (const d of room.drinks) d.acked = true; // fresh game, fresh slate
         log(room, `Game on! ${playerName(room, s.turnOrder[0])} draws first.`);
+        armTurnTimer(room);
         return;
       }
       case "draw": {

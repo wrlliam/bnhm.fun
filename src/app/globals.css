@@ -321,3 +321,10 @@ html[data-motion="off"] *::after {
   to { opacity: 1; transform: translateY(0); }
 }
 .pop { animation: pop 200ms ease-out both; }
+
+@keyframes float-up {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  10% { opacity: 1; transform: translateY(-5vh) scale(1); }
+  100% { transform: translateY(-65vh) scale(1.1); opacity: 0; }
+}
+.float-up { animation: float-up 4s ease-out forwards; }

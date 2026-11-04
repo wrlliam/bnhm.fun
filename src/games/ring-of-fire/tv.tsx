@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PlayingCard } from "@/components/playing-card";
 import { Avatar } from "@/components/room/avatar";
 import { WaitingForDrinks } from "@/components/room/drink-alert";
+import { Countdown } from "@/components/room/game-bits";
 import { act, BigButton } from "@/components/room/room-shell";
 import { CardSettings, Chooser, CurrentCard, drinkTotals, game, nameOf, PairsEditor, type RofProps, RuleVote, TableInfo } from "./shared";
 
@@ -56,6 +57,7 @@ export function RofTv({ room, hostToken }: RofProps) {
                 <span>
                   <strong className="font-hand text-6xl">{nameOf(room, g.turnPlayerId)}</strong>, draw on your phone
                 </span>
+                <Countdown deadline={g.deadline} big />
               </div>
             )}
             {g.current ? (

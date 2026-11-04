@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type RoomView, roomAction, saveToken, type StreamStatus } from "@/lib/rooms/client";
 import { AdminAccess } from "./admin-access";
+import { JoinQr } from "./join-qr";
+import { ReactionBar } from "./reactions";
+import { Recap } from "./recap";
 import { Avatar } from "./avatar";
 import { JoinForm } from "./join-form";
 import { PlayerList } from "./player-list";
@@ -79,9 +82,41 @@ export function RoomShell({
           <div>
             <h2 className="text-sm font-medium text-faint">Players ({room.players.length})</h2>
             <div className="mt-2">
-              <PlayerList room={room} size={32} />
+              <PlayerList
+                room={room}
+                size={32}
+                onMakeHost={room.isHost ? (id) => act(room, token, hostToken, { type: "makeHost", playerId: id }) : undefined}
+                onKick={room.isHost ? (id) => act(room, token, hostToken, { type: "kick", playerId: id }) : undefined}
+              />
             </div>
           </div>
+          <div className="flex items-center gap-4">
+            <JoinQr code={room.code} size={96} />
+            <p className="text-sm text-faint">
+              Scan to join, or enter code <span className="font-mono font-bold text-ink">{room.code}</span>.
+              {room.myPin && (
+                <>
+                  <br />
+                  Your rejoin PIN: <span className="font-mono font-bold text-ink">{room.myPin}</span>, to get back in from
+                  another phone.
+                </>
+              )}
+            </p>
+          </div>
+          <details>
+            <summary className="cursor-pointer text-sm font-medium">Game recap &amp; stats</summary>
+            <div className="mt-3">
+              <Recap room={room} />
+              {room.isHost && (
+                <button
+                  onClick={() => act(room, token, hostToken, { type: "recap", show: !room.showRecap })}
+                  className="mt-3 block text-sm font-medium underline underline-offset-4"
+                >
+                  {room.showRecap ? "Hide recap on the TV" : "Show recap on the TV"}
+                </button>
+              )}
+            </div>
+          </details>
           {menu}
           <AdminAccess room={room} hostToken={hostToken ?? null} />
           <div className="flex flex-col items-start gap-2 text-sm">
@@ -115,6 +150,10 @@ export function RoomShell({
       )}
 
       <section className="mt-6">{children}</section>
+
+      <div className="mt-10 border-t border-ink/10 pt-4">
+        <ReactionBar room={room} />
+      </div>
     </main>
   );
 }

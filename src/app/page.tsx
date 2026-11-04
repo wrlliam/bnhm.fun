@@ -17,6 +17,26 @@ const ROOM_GAMES = [
     blurb: "Everyone votes in secret on their phone. One sip per vote you get.",
   },
   {
+    kind: "trivia",
+    name: "Trivia",
+    blurb: "Questions on the TV, answers on your phone. Fast right answers score most.",
+  },
+  {
+    kind: "never-have-i-ever",
+    name: "Never Have I Ever",
+    blurb: "Answer in secret on your phone; the guilty are revealed together.",
+  },
+  {
+    kind: "truth-or-drink",
+    name: "Truth or Drink",
+    blurb: "Your question pops up on your phone. Answer honestly, or drink to dodge it.",
+  },
+  {
+    kind: "higher-lower",
+    name: "Higher or Lower",
+    blurb: "Take turns calling the next card. Miss and drink your whole streak.",
+  },
+  {
     kind: "hangman",
     name: "Hangman",
     blurb: "One person picks a word, everyone else guesses letters.",

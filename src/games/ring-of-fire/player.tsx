@@ -9,6 +9,7 @@ import { act, BigButton, openTv, RoomShell } from "@/components/room/room-shell"
 import { buzz, playSound } from "@/lib/feedback";
 import type { RoomView, StreamStatus } from "@/lib/rooms/client";
 import { RULES } from "@/lib/ring-of-fire";
+import { Countdown, TurnTimerSetting } from "@/components/room/game-bits";
 import { CardSettings, Chooser, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
 
 /**
@@ -21,6 +22,7 @@ export function RofPlayer(props: RofProps & { status: StreamStatus; token: strin
 
   const menu = room.isHost ? (
     <div className="space-y-3">
+      <TurnTimerSetting room={room} value={g.turnSeconds} />
       <details>
         <summary className="cursor-pointer text-sm font-medium">Host: drinking partners</summary>
         <div className="mt-3">
@@ -89,6 +91,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
             Open the TV screen
           </button>
           <AdminAccess room={room} hostToken={hostToken} />
+          <TurnTimerSetting room={room} value={game(room).turnSeconds} />
           <details className="pt-2">
             <summary className="cursor-pointer text-sm font-medium">Set up drinking partners (optional)</summary>
             <div className="mt-3">
@@ -161,6 +164,11 @@ function InGame({ room, token, hostToken }: RofProps) {
         >
           <span className="block font-hand text-6xl font-bold leading-none">Your turn</span>
           <span className="mt-2 block text-lg">Tap here to draw a card</span>
+          {g.deadline && (
+            <span className="mt-3 inline-block">
+              <Countdown deadline={g.deadline} />
+            </span>
+          )}
         </button>
       ) : g.vote ? (
         <RuleVote room={room} token={token} hostToken={hostToken} />
@@ -317,7 +325,7 @@ function TableExtras({ room, hostToken }: { room: RoomView; hostToken: string | 
             {g.rules.map((r) => (
               <li key={r.id}>
                 {r.text}
-                {room.isHost && hostToken && <RemoveRule room={room} hostToken={hostToken} id={r.id} />}
+                {room.isHost && <RemoveRule room={room} hostToken={hostToken} id={r.id} />}
               </li>
             ))}
           </ul>

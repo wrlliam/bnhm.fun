@@ -7,7 +7,7 @@ import { resetAdmin, type RoomView, unlockAdmin } from "@/lib/rooms/client";
 export function AdminAccess({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
   const [copied, setCopied] = useState(false);
   const [shown, setShown] = useState(true);
-  if (!room.isHost || !room.adminPassword || !hostToken) return null;
+  if (!room.isHost || !room.adminPassword) return null;
   const tvUrl = typeof window === "undefined" ? `/tv/${room.code}` : `${location.host}/tv/${room.code}`;
 
   return (
@@ -41,7 +41,7 @@ export function AdminAccess({ room, hostToken }: { room: RoomView; hostToken: st
           onClick={async () => {
             if (!confirm("Make a new admin password? Every other device using the old one loses admin controls.")) return;
             try {
-              await resetAdmin(room.code, hostToken);
+              await resetAdmin(room.code, hostToken ?? undefined);
             } catch (e) {
               alert((e as Error).message);
             }

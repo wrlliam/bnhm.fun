@@ -97,6 +97,27 @@ export const GUIDES: Guide[] = [
     tips: ["You can change your vote until the last person votes."],
   },
   {
+    slug: "trivia",
+    name: "Trivia",
+    tagline: "Questions on the TV, answers on your phone. Fast right answers score the most.",
+    players: "1–16",
+    time: "10 min",
+    drinking: false,
+    modes: [{ label: "Start a room", href: "/", room: true }],
+    overview: "A quick quiz round: 10 general-knowledge questions, 20 seconds each, with a live leaderboard.",
+    setup: [
+      "Start a Trivia room and share the code (or the QR code on the TV).",
+      "Optional: the host can switch on drinking mode, where a wrong or missing answer costs a sip.",
+    ],
+    howToPlay: [
+      "Each question shows on the TV and on every phone with four coloured answers.",
+      "Tap your answer on your phone. You get one go, so no changing your mind.",
+      "When everyone's answered, or after 20 seconds, the right answer is revealed.",
+      "A right answer scores 500 points plus up to 500 more for speed. Highest total after 10 questions wins.",
+    ],
+    tips: ["Answer fast. The speed bonus decides most games."],
+  },
+  {
     slug: "hangman",
     name: "Hangman",
     tagline: "One person picks a word; everyone else guesses letters before the stickman is drawn.",
@@ -128,7 +149,7 @@ export const GUIDES: Guide[] = [
     players: "1+",
     time: "10–20 min",
     drinking: true,
-    modes: [{ label: "Play (one phone)", href: "/party/higher-lower" }],
+    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/higher-lower" }],
     overview: "A quick streak game. The longer your run of correct calls, the more it hurts when you miss.",
     setup: ["Optionally add player names so the game tracks whose turn it is."],
     howToPlay: [
@@ -226,7 +247,7 @@ export const GUIDES: Guide[] = [
     players: "3+",
     time: "Any",
     drinking: true,
-    modes: [{ label: "Play (one phone)", href: "/party/never-have-i-ever" }],
+    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/never-have-i-ever" }],
     overview: "Confessions, one card at a time.",
     setup: ["Optionally add names so the app shows who reads each card."],
     howToPlay: [
@@ -243,7 +264,7 @@ export const GUIDES: Guide[] = [
     players: "2+",
     time: "Any",
     drinking: true,
-    modes: [{ label: "Play (one phone)", href: "/party/truth-or-drink" }],
+    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/truth-or-drink" }],
     overview: "Personal questions. Every one can be skipped, for a price.",
     setup: ["Optionally add names to track turns."],
     howToPlay: [

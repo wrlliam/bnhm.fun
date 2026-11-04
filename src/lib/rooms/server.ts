@@ -1,4 +1,7 @@
 import {
+  makeHost,
+  react,
+  rejoin,
   ackDrinks,
   addPlayer,
   baseView,
@@ -72,6 +75,25 @@ export function perform(code: string, body: Body) {
       if (!actor.player) return { ok: true };
       mod.onLeave?.(room, actor.player.id);
       removePlayer(room, actor.player.id);
+      break;
+    }
+    case "rejoin": {
+      // no state change, no broadcast
+      return { token: rejoin(room, body.playerId, body.pin) };
+    }
+    case "makeHost": {
+      if (!actor.isHost) throw new GameError("Only the host can do that", 403);
+      makeHost(room, String(body.playerId ?? ""));
+      break;
+    }
+    case "react": {
+      if (!actor.player) throw new GameError("Join the room first", 403);
+      react(room, actor.player.id, body.emoji);
+      break;
+    }
+    case "recap": {
+      if (!actor.isHost) throw new GameError("Only the host can do that", 403);
+      room.showRecap = !!body.show;
       break;
     }
     case "ackDrink": {

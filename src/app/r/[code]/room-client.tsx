@@ -5,8 +5,13 @@ import { useParams } from "next/navigation";
 import { Avatar } from "@/components/room/avatar";
 import { DrinkAlert } from "@/components/room/drink-alert";
 import { JoinForm } from "@/components/room/join-form";
+import { RejoinForm } from "@/components/room/rejoin";
 import { Centered, RoomShell } from "@/components/room/room-shell";
 import { HangmanPlayer } from "@/games/hangman/player";
+import { HlPlayer } from "@/games/higher-lower/views";
+import { NhiePlayer } from "@/games/never-have-i-ever/views";
+import { TriviaPlayer } from "@/games/trivia/views";
+import { TodPlayer } from "@/games/truth-or-drink/views";
 import { MltPlayer } from "@/games/most-likely-to/player";
 import { RofPlayer } from "@/games/ring-of-fire/player";
 import { useRoomStream, useRoomTokens } from "@/lib/rooms/client";
@@ -51,6 +56,7 @@ export function RoomClient() {
             </>
           }
         />
+        <RejoinForm room={room} />
         {room.players.length > 0 && (
           <div className="mt-10 w-full max-w-sm text-left">
             <p className="text-sm text-faint">Already here</p>
@@ -73,6 +79,10 @@ export function RoomClient() {
     <>
       {room.kind === "ring-of-fire" && <RofPlayer {...props} status={status} />}
       {room.kind === "most-likely-to" && <MltPlayer {...props} status={status} />}
+      {room.kind === "never-have-i-ever" && <NhiePlayer {...props} status={status} />}
+      {room.kind === "higher-lower" && <HlPlayer {...props} status={status} />}
+      {room.kind === "truth-or-drink" && <TodPlayer {...props} status={status} />}
+      {room.kind === "trivia" && <TriviaPlayer {...props} status={status} />}
       {room.kind === "hangman" && (
         <RoomShell room={room} status={status} token={token} hostToken={host}>
           <HangmanPlayer {...props} />

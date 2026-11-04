@@ -203,7 +203,7 @@ export function TableInfo({ room, big = false, hostToken }: { room: RoomView; bi
             {g.rules.map((r) => (
               <li key={r.id}>
                 {r.text} <span className="text-faint">— {nameOf(room, r.by)}</span>
-                {hostToken && room.isHost && <RemoveRule room={room} hostToken={hostToken} id={r.id} />}
+                {room.isHost && <RemoveRule room={room} hostToken={hostToken ?? null} id={r.id} />}
               </li>
             ))}
           </ul>
@@ -301,7 +301,7 @@ export function PairsEditor({ room, hostToken }: { room: RoomView; hostToken: st
 }
 
 /** Host-only "remove" link next to a rule. */
-export function RemoveRule({ room, hostToken, id }: { room: RoomView; hostToken: string; id: number }) {
+export function RemoveRule({ room, hostToken, id }: { room: RoomView; hostToken: string | null; id: number }) {
   return (
     <button
       onClick={() => confirm("Remove this rule for everyone?") && act(room, null, hostToken, { type: "removeRule", id })}
@@ -453,7 +453,7 @@ export function RuleVote({ room, token, hostToken, big = false }: RofProps & { b
       <p className={`mt-3 text-faint ${big ? "text-base" : "text-xs"}`}>
         Closes when everyone has voted. More yes than no scraps the rule; a tie keeps it.
       </p>
-      {room.isHost && hostToken && (
+      {room.isHost && (
         <button
           onClick={() => act(room, null, hostToken, { type: "closeVote" })}
           className="mt-3 text-sm underline underline-offset-4"

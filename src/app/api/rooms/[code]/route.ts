@@ -25,6 +25,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/rooms/[code
     rateLimit(`act:${ip}`, 240, 60_000);
     if (body.type === "join") rateLimit(`join:${ip}`, 30, 10 * 60_000);
     if (body.type === "unlock") rateLimit(`unlock:${ip}`, 10, 10 * 60_000);
+    if (body.type === "rejoin") rateLimit(`rejoin:${ip}`, 20, 10 * 60_000);
     return Response.json({ ok: true, ...perform(code, body) });
   } catch (e) {
     return errorResponse(e);
