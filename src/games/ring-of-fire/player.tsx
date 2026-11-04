@@ -93,7 +93,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
           <AdminAccess room={room} hostToken={hostToken} />
           <TurnTimerSetting room={room} value={game(room).turnSeconds} />
           <details className="pt-2">
-            <summary className="cursor-pointer text-sm font-medium">Set up drinking partners (optional)</summary>
+            <summary className="cursor-pointer text-sm font-medium">Drinking partners (optional): drink together</summary>
             <div className="mt-3">
               <PairsEditor room={room} hostToken={hostToken} />
             </div>

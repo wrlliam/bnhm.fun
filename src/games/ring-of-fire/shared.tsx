@@ -231,69 +231,140 @@ export function drinkTotals(room: RoomView) {
   return totals;
 }
 
-/** Host: pair players up as drinking partners at any time (same effect as an 8 / Mate). */
+/** Host: pair players up as drinking partners (same effect as an 8 / Mate). Tap a face, tap their partner. */
 export function PairsEditor({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
   const g = game(room);
-  const [a, setA] = useState("");
-  const [b, setB] = useState("");
+  const [first, setFirst] = useState<string | null>(null);
+  const [second, setSecond] = useState<string | null>(null);
   const [both, setBoth] = useState(true);
-  const select = "min-w-0 flex-1 rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-2 py-1.5";
+  const [busy, setBusy] = useState(false);
+  const has = (a: string, b: string) => g.mates.some(([x, y]) => x === a && y === b);
+  const name = (id: string | null) => (!id ? "" : id === room.me ? "you" : nameOf(room, id));
+  const drinks = (id: string | null) => (id === room.me ? "drink" : "drinks");
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+  // two-way pairs show once, as A ⇄ B
+  const chips: { a: string; b: string; twoWay: boolean }[] = [];
+  for (const [a, b] of g.mates) {
+    if (chips.some((c) => (c.a === b && c.b === a) || (c.a === a && c.b === b))) continue;
+    chips.push({ a, b, twoWay: has(b, a) });
+  }
+
+  const already = !!first && !!second && has(first, second) && (!both || has(second, first));
+  const sentence = cap(
+    already
+      ? `${name(first)} and ${name(second)} are already partners`
+      : !first
+        ? "Tap the first player"
+        : !second
+          ? `Now tap who drinks with ${name(first)}`
+          : both
+            ? `${name(first)} and ${name(second)} always drink together`
+            : `When ${name(first)} ${drinks(first)}, ${name(second)} ${drinks(second)} too, not the other way round`,
+  );
+
+  const pick = (id: string) => {
+    if (!first || (first && second)) {
+      setFirst(id);
+      setSecond(null);
+    } else if (id === first) setFirst(null);
+    else setSecond(id);
+  };
 
   return (
-    <div className="space-y-3 text-sm">
-      <p className="text-faint">When the first person drinks, the second person&rsquo;s phone tells them to drink too.</p>
-      <div className="flex flex-wrap items-center gap-2">
-        <select value={a} onChange={(e) => setA(e.target.value)} className={select} aria-label="First player">
-          <option value="">Player…</option>
-          {room.players.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-        <span>{both ? "⇄" : "→"}</span>
-        <select value={b} onChange={(e) => setB(e.target.value)} className={select} aria-label="Partner">
-          <option value="">Partner…</option>
-          {room.players
-            .filter((p) => p.id !== a)
-            .map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-        </select>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-1 rounded-xl bg-ink/5 p-1 text-sm" role="radiogroup" aria-label="Direction">
+        {(
+          [
+            [true, "Both ways", "⇄"],
+            [false, "One way", "→"],
+          ] as const
+        ).map(([val, label, glyph]) => (
+          <button
+            key={label}
+            role="radio"
+            aria-checked={both === val}
+            onClick={() => setBoth(val)}
+            className={`rounded-lg py-2 font-medium transition-colors ${both === val ? "bg-surface shadow-sm" : "text-faint hover:text-ink"}`}
+          >
+            <span className="mr-1.5 font-mono">{glyph}</span>
+            {label}
+          </button>
+        ))}
       </div>
-      <label className="flex items-center gap-2">
-        <input type="checkbox" checked={both} onChange={(e) => setBoth(e.target.checked)} />
-        Both ways (either one drinks → both drink)
-      </label>
-      <button
-        disabled={!a || !b || a === b}
-        onClick={async () => {
-          if (await act(room, null, hostToken, { type: "addMate", a, b, both })) {
-            setA("");
-            setB("");
-          }
-        }}
-        className="rounded-md bg-ink px-4 py-2 font-medium text-paper disabled:opacity-40"
-      >
-        Add partners
-      </button>
-      {g.mates.length > 0 && (
-        <ul className="space-y-1">
-          {g.mates.map(([x, y]) => (
-            <li key={x + y} className="flex items-center gap-2">
-              <span>
-                {nameOf(room, x)} → {nameOf(room, y)}
+
+      <div className="flex flex-wrap gap-3">
+        {room.players.map((p) => {
+          const role = p.id === first ? 1 : p.id === second ? 2 : 0;
+          return (
+            <button
+              key={p.id}
+              onClick={() => pick(p.id)}
+              aria-pressed={role > 0}
+              className="flex w-16 flex-col items-center gap-1 text-center"
+            >
+              <span className="relative">
+                <Avatar player={p} size={52} ring={role ? "ring-hit" : undefined} dim={!!first && !!second && !role} />
+                {role > 0 && (
+                  <span className="cheer absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-hit font-mono text-[11px] font-bold text-paper">
+                    {role}
+                  </span>
+                )}
               </span>
-              <button
-                onClick={() => act(room, null, hostToken, { type: "removeMate", a: x, b: y })}
-                className="text-xs text-faint underline underline-offset-2 hover:text-miss"
-              >
-                remove
-              </button>
-            </li>
-          ))}
+              <span className="w-full truncate text-xs">{p.id === room.me ? "You" : p.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <p className={`flex-1 text-sm ${first && second ? "font-medium" : "text-faint"}`}>{sentence}</p>
+        {first && second && !already && (
+          <button
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              if (await act(room, null, hostToken, { type: "addMate", a: first, b: second, both })) {
+                setFirst(null);
+                setSecond(null);
+              }
+              setBusy(false);
+            }}
+            className="pop rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-50"
+          >
+            Pair them
+          </button>
+        )}
+      </div>
+
+      {chips.length > 0 && (
+        <ul className="flex flex-wrap gap-2" aria-label="Current partners">
+          {chips.map(({ a, b, twoWay }) => {
+            const pa = playerOf(room, a);
+            const pb = playerOf(room, b);
+            return (
+              <li key={a + b} className="flex items-center gap-1.5 rounded-full border border-ink/15 bg-surface py-1 pl-1 pr-1.5 text-sm">
+                {pa && <Avatar player={pa} size={24} />}
+                <span className="font-mono text-faint" aria-label={twoWay ? "both ways" : "one way"}>
+                  {twoWay ? "⇄" : "→"}
+                </span>
+                {pb && <Avatar player={pb} size={24} />}
+                <span className="ml-1">
+                  {cap(name(a))} &amp; {name(b)}
+                </span>
+                <button
+                  onClick={async () => {
+                    await act(room, null, hostToken, { type: "removeMate", a, b });
+                    if (twoWay) await act(room, null, hostToken, { type: "removeMate", a: b, b: a });
+                  }}
+                  aria-label={`Unpair ${name(a)} and ${name(b)}`}
+                  className="ml-1 flex size-6 items-center justify-center rounded-full text-faint transition-colors hover:bg-miss/15 hover:text-miss"
+                >
+                  ×
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
