@@ -6,7 +6,7 @@ import { resetAdmin, type RoomView, unlockAdmin } from "@/lib/rooms/client";
 /** Host-only: the admin password and how to use it on another device. */
 export function AdminAccess({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
   const [copied, setCopied] = useState(false);
-  const [shown, setShown] = useState(true);
+  const [shown, setShown] = useState(false); // hidden until tapped, so it can't be read over your shoulder
   if (!room.isHost || !room.adminPassword) return null;
   const tvUrl = typeof window === "undefined" ? `/tv/${room.code}` : `${location.host}/tv/${room.code}`;
 
