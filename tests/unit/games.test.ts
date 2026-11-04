@@ -29,6 +29,31 @@ describe("Ring of Fire", () => {
     expect(seen.every((r) => ["A", "3", "Q"].includes(r))).toBe(true);
   });
 
+  test("a finished deck can carry on, or go endless until switched off", () => {
+    const { host, room, code } = setup("ring-of-fire", ["Ann", "Ben"]);
+    host({ type: "settings", disabled: ["A", "2", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"] });
+    host({ type: "start" });
+    const s = room.state as RofState;
+    const drawDeck = () => {
+      for (let i = 0; i < 4; i++) {
+        ackAll(code);
+        host({ type: "draw" });
+      }
+      ackAll(code);
+    };
+    expect(() => host({ type: "continue" })).toThrow("hasn't run out");
+    drawDeck();
+    expect(s.status).toBe("finished");
+    host({ type: "continue" });
+    expect([s.status, s.deckNo, s.drawn.length]).toEqual(["playing", 2, 0]);
+    host({ type: "endless", on: true });
+    drawDeck();
+    expect([s.status, s.deckNo]).toEqual(["playing", 3]);
+    host({ type: "endless", on: false });
+    drawDeck();
+    expect(s.status).toBe("finished");
+  });
+
   test("turns are enforced and rotate", () => {
     const { as, host, room, players } = setup("ring-of-fire", ["Ann", "Ben"]);
     host({ type: "start" });

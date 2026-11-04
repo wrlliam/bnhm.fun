@@ -172,7 +172,10 @@ export const GAMES_CATALOG: GameMeta[] = [
     players: "2–16",
     minPlayers: 2,
     time: "45 min",
-    options: [TURN_TIMER],
+    options: [
+      TURN_TIMER,
+      { key: "endless", type: "toggle", label: "Endless", hint: "Shuffle in a new deck whenever one runs out, so the game never ends on its own", default: false },
+    ],
   },
   {
     kind: "never-have-i-ever",

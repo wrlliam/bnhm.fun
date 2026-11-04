@@ -535,3 +535,57 @@ export function RuleVote({ room, token, hostToken, big = false }: RofProps & { b
     </div>
   );
 }
+
+/** Host switch for endless mode. Turning it off is how you "cancel": the game ends with the current deck. */
+export function EndlessToggle({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
+  const g = game(room);
+  return (
+    <button
+      role="switch"
+      aria-checked={g.endless}
+      onClick={() => act(room, null, hostToken, { type: "endless", on: !g.endless })}
+      className="flex w-full items-center gap-3 rounded-xl text-left"
+    >
+      <span className="flex-1">
+        <span className="block text-sm font-medium">Endless mode{g.endless && g.status !== "lobby" ? ` · deck ${g.deckNo}` : ""}</span>
+        <span className="block text-xs text-faint">
+          {g.endless ? "A new deck is shuffled in whenever one runs out. Turn off to end with this deck" : "Shuffle in a new deck whenever one runs out"}
+        </span>
+      </span>
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${g.endless ? "bg-hit" : "bg-ink/20"}`}>
+        <span className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-[left] ${g.endless ? "left-[1.375rem]" : "left-0.5"}`} />
+      </span>
+    </button>
+  );
+}
+
+/** When the deck runs out: keep going with a new deck, go endless, or (via What's next) end it. */
+export function DeckFinished({ room, hostToken, big = false }: { room: RoomView; hostToken: string | null; big?: boolean }) {
+  const g = game(room);
+  return (
+    <div className={`pop rounded-2xl border border-ink/15 bg-surface p-5 ${big ? "p-8" : ""}`}>
+      <p className={`font-hand font-bold leading-none ${big ? "text-7xl" : "text-5xl"}`}>That&rsquo;s the whole deck</p>
+      <p className={`mt-2 text-faint ${big ? "text-2xl" : ""}`}>
+        {g.deckNo > 1 ? `${g.deckNo} decks played. ` : ""}Mates, rules and the question master carry on if you keep going
+      </p>
+      {room.isHost ? (
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            onClick={() => act(room, null, hostToken, { type: "continue" })}
+            className={`rounded-xl bg-ink font-medium text-paper transition-colors hover:bg-ink/90 ${big ? "px-8 py-4 text-xl" : "px-5 py-3"}`}
+          >
+            Keep going with a new deck
+          </button>
+          <button
+            onClick={() => act(room, null, hostToken, { type: "endless", on: true })}
+            className={`rounded-xl border-2 border-ink font-medium transition-colors hover:bg-ink hover:text-paper ${big ? "px-8 py-4 text-xl" : "px-5 py-3"}`}
+          >
+            Go endless
+          </button>
+        </div>
+      ) : (
+        <p className="mt-4 text-sm">Waiting for the host to keep going or pick another game</p>
+      )}
+    </div>
+  );
+}

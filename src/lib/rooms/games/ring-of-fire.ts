@@ -47,6 +47,10 @@ export type RofState = {
   /** Turn timer: seconds per turn (0 = off) and when the current turn runs out. */
   turnSeconds: number;
   deadline: number | null;
+  /** Endless mode: a fresh deck is shuffled in whenever this one runs out. */
+  endless: boolean;
+  /** Which deck we're on (1 = first); goes up each time play continues with a new deck. */
+  deckNo: number;
   log: { id: number; text: string }[];
   logSeq: number;
 };
@@ -130,10 +134,28 @@ function advance(room: R) {
   const s = room.state;
   if (s.turnOrder.length) s.turn = (s.turn + 1) % s.turnOrder.length;
   if (remaining(s) === 0) {
-    s.status = "finished";
-    log(room, "The deck is empty. Game over!");
+    if (s.endless) newDeck(room);
+    else {
+      s.status = "finished";
+      log(room, "The deck is empty");
+    }
   }
   armTurnTimer(room);
+}
+
+/**
+ * Keep the party going with a freshly shuffled deck. Turn order, mates, rules and
+ * the question master carry over; the King count starts again for a new cup.
+ */
+function newDeck(room: R) {
+  const s = room.state;
+  s.seed = newSeed();
+  s.drawn = [];
+  s.kings = 0;
+  s.current = null;
+  s.deckNo++;
+  s.status = "playing";
+  log(room, `Deck ${s.deckNo} shuffled in. Keep going, and refill the King's cup`);
 }
 
 /** (Re)start the per-turn clock. Running out skips the turn (and any unfinished choice). */
@@ -224,6 +246,8 @@ function view(room: R) {
     log: s.log.slice(-15),
     turnSeconds: s.turnSeconds,
     deadline: s.deadline,
+    endless: s.endless,
+    deckNo: s.deckNo,
   };
 }
 
@@ -250,6 +274,8 @@ export const ringOfFire: GameModule<RofState> = {
     kings: 0,
     turnSeconds: 0,
     deadline: null,
+    endless: false,
+    deckNo: 1,
     log: [],
     logSeq: 0,
   }),
@@ -283,8 +309,30 @@ export const ringOfFire: GameModule<RofState> = {
     const s = room.state;
     switch (action.type) {
       case "timer": {
+        // also the setup-page options entry point
         requireHost(actor);
-        s.turnSeconds = [0, 15, 30, 60].includes(Number(action.turnSeconds)) ? Number(action.turnSeconds) : 0;
+        if (action.turnSeconds !== undefined) {
+          s.turnSeconds = [0, 15, 30, 60].includes(Number(action.turnSeconds)) ? Number(action.turnSeconds) : 0;
+          armTurnTimer(room);
+        }
+        if (action.endless !== undefined) s.endless = !!action.endless;
+        return;
+      }
+      case "endless": {
+        // switch endless on/off; switching it on at the end of a deck carries straight on
+        requireHost(actor);
+        s.endless = !!action.on;
+        log(room, s.endless ? "Endless mode on: new decks keep coming" : "Endless mode off: the game ends with this deck");
+        if (s.endless && s.status === "finished") {
+          newDeck(room);
+          armTurnTimer(room);
+        }
+        return;
+      }
+      case "continue": {
+        requireHost(actor);
+        if (s.status !== "finished") throw new GameError("The deck hasn't run out yet");
+        newDeck(room);
         armTurnTimer(room);
         return;
       }
@@ -304,6 +352,7 @@ export const ringOfFire: GameModule<RofState> = {
           ...ringOfFire.init(),
           disabled: s.disabled,
           turnSeconds: s.turnSeconds,
+          endless: s.endless,
           status: "playing",
           turnOrder: room.players.map((p) => p.id),
         });
@@ -452,7 +501,7 @@ export const ringOfFire: GameModule<RofState> = {
       }
       case "reset": {
         requireHost(actor);
-        room.state = { ...ringOfFire.init(), disabled: s.disabled };
+        room.state = { ...ringOfFire.init(), disabled: s.disabled, turnSeconds: s.turnSeconds, endless: s.endless };
         return;
       }
       default:

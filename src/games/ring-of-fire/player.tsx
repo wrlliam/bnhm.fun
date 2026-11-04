@@ -10,7 +10,7 @@ import { buzz, playSound } from "@/lib/feedback";
 import type { RoomView, StreamStatus } from "@/lib/rooms/client";
 import { RULES } from "@/lib/ring-of-fire";
 import { Countdown, TurnTimerSetting } from "@/components/room/game-bits";
-import { CardSettings, Chooser, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
+import { CardSettings, Chooser, DeckFinished, EndlessToggle, game, nameOf, PairsEditor, playerOf, RemoveRule, type RofProps, RuleVote } from "./shared";
 
 /**
  * Phone view. Kept deliberately simple: what you need to do now, the last card,
@@ -23,6 +23,7 @@ export function RofPlayer(props: RofProps & { status: StreamStatus; token: strin
   const menu = room.isHost ? (
     <div className="space-y-3">
       <TurnTimerSetting room={room} value={g.turnSeconds} />
+      <EndlessToggle room={room} hostToken={hostToken} />
       <details>
         <summary className="cursor-pointer text-sm font-medium">Host: drinking partners</summary>
         <div className="mt-3">
@@ -92,6 +93,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
           </button>
           <AdminAccess room={room} hostToken={hostToken} />
           <TurnTimerSetting room={room} value={game(room).turnSeconds} />
+          <EndlessToggle room={room} hostToken={hostToken} />
           <details className="pt-2">
             <summary className="cursor-pointer text-sm font-medium">Drinking partners (optional): drink together</summary>
             <div className="mt-3">
@@ -138,17 +140,7 @@ function InGame({ room, token, hostToken }: RofProps) {
     <div className="space-y-6">
       {/* 1. What to do right now */}
       {g.status === "finished" ? (
-        <Banner tone="ink">
-          That&rsquo;s the whole deck — game over!
-          {room.isHost && (
-            <button
-              onClick={() => act(room, token, hostToken, { type: "reset" })}
-              className="mt-3 block w-full rounded-md bg-paper py-3 font-medium text-ink"
-            >
-              Back to the lobby
-            </button>
-          )}
-        </Banner>
+        <DeckFinished room={room} hostToken={hostToken} />
       ) : myTurn && drinksPending ? (
         <div className="space-y-3">
           <div className="w-full rounded-2xl bg-hit/30 px-6 py-6 text-center">
@@ -299,6 +291,7 @@ function TableExtras({ room, hostToken }: { room: RoomView; hostToken: string | 
   const g = game(room);
   const bits = [
     `${g.left} cards left`,
+    g.endless ? `endless · deck ${g.deckNo}` : null,
     g.kingsOn ? `${g.kings}/4 Kings` : null,
     g.questionMaster && g.questionMaster !== room.me ? `Question master: ${nameOf(room, g.questionMaster)}` : null,
   ].filter(Boolean);

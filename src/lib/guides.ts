@@ -127,7 +127,7 @@ export const GUIDES: Guide[] = [
       "If the card needs a decision (who drinks, who's your mate, what the new rule is), the drawer picks on their phone. The host can also pick for them.",
       "Anyone who has to drink gets a full-screen “Drink!” on their phone, with a buzz and the reason. They tap “Done — I drank” when finished.",
       "The next card can't be drawn until everyone who has to drink has tapped Done. The TV and phones show who you're waiting on, and the host can skip someone who's wandered off.",
-      "The game ends when the deck runs out. The fourth King (if Kings are on) means the drawer drinks the King's cup.",
+      "When the deck runs out the host can shuffle in a new one and keep going, or switch on Endless so new decks keep coming until they turn it off. The fourth King (if Kings are on) means the drawer drinks the King's cup.",
     ],
     cardTable: true,
     rules: [
