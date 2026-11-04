@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { PlayingCard } from "@/components/playing-card";
@@ -18,6 +19,7 @@ import {
 export default function CardsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8 sm:pl-20">
+      <SiteNav />
       <header className="flex items-end justify-between gap-4">
         <h1 className="font-hand text-5xl font-bold">Card dealer</h1>
         <span className="flex gap-4 text-sm">

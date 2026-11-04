@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type RoomView, roomAction, saveToken, type StreamStatus } from "@/lib/rooms/client";
 import { AdminAccess } from "./admin-access";
+import { GameSwitcher, WhatsNext } from "./game-switcher";
 import { JoinQr } from "./join-qr";
 import { ReactionBar } from "./reactions";
 import { Recap } from "./recap";
@@ -118,6 +119,14 @@ export function RoomShell({
             </div>
           </details>
           {menu}
+          {room.isHost && (
+            <details>
+              <summary className="cursor-pointer text-sm font-medium">Switch game (everyone stays in)</summary>
+              <div className="mt-3">
+                <GameSwitcher room={room} compact />
+              </div>
+            </details>
+          )}
           <AdminAccess room={room} hostToken={hostToken ?? null} />
           <div className="flex flex-col items-start gap-2 text-sm">
             {hostToken && (
@@ -150,6 +159,12 @@ export function RoomShell({
       )}
 
       <section className="mt-6">{children}</section>
+
+      {(room.game as { status?: string }).status === "finished" && (
+        <div className="mt-8">
+          <WhatsNext room={room} />
+        </div>
+      )}
 
       <div className="mt-10 border-t border-ink/10 pt-4">
         <ReactionBar room={room} />

@@ -17,7 +17,11 @@ export type GameKind =
   | "never-have-i-ever"
   | "higher-lower"
   | "truth-or-drink"
-  | "trivia";
+  | "trivia"
+  | "spotlight"
+  | "punchline"
+  | "bluff"
+  | "odd-one-out";
 
 export type Player = {
   id: string; // public: safe to show to other players

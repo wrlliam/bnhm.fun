@@ -1,4 +1,5 @@
 import {
+  cancelTimer,
   makeHost,
   react,
   rejoin,
@@ -29,10 +30,23 @@ export function ensureRooms() {
   return roomsReady(rooms, (room) => GAMES[room.kind]?.restore?.(room));
 }
 
-export function create(kind: unknown) {
+/** Apply setup-page options through the game's own "settings" action (games ignore unknown keys). */
+function applyOptions(room: Room, options: unknown) {
+  if (!options || typeof options !== "object" || !Object.keys(options).length) return;
+  const mod = GAMES[room.kind];
+  try {
+    if (room.kind === "ring-of-fire") mod.act(room, { player: null, isHost: true }, { ...options, type: "timer" });
+    else mod.act(room, { player: null, isHost: true }, { ...options, type: "settings" });
+  } catch {
+    // games without settings: nothing to apply
+  }
+}
+
+export function create(kind: unknown, options?: unknown) {
   if (!isGameKind(kind)) throw new GameError("Unknown game");
   if (rooms.size >= MAX_ROOMS) throw new GameError("The server is full right now — try again later", 503);
   const room = createRoom(kind as GameKind, GAMES[kind].init);
+  applyOptions(room, options);
   track("room_created", kind);
   return { code: room.code, hostToken: room.hostToken, adminPassword: room.adminPassword };
 }
@@ -99,6 +113,20 @@ export function perform(code: string, body: Body) {
       if (!actor.player) throw new GameError("Join the room first", 403);
       react(room, actor.player.id, body.emoji);
       track("reaction");
+      break;
+    }
+    case "switchGame": {
+      // same room, same players, new game: nobody has to rejoin
+      if (!actor.isHost) throw new GameError("Only the host can change the game", 403);
+      if (!isGameKind(body.kind)) throw new GameError("Unknown game");
+      for (const key of ["turn", "question", "phase"]) cancelTimer(room, key);
+      for (const d of room.drinks) d.acked = true;
+      room.kind = body.kind as GameKind;
+      room.state = GAMES[room.kind].init();
+      for (const p of room.players) GAMES[room.kind].onJoin?.(room, p);
+      applyOptions(room, body.options);
+      room.showRecap = false;
+      track("room_created", room.kind);
       break;
     }
     case "recap": {

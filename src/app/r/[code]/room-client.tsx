@@ -7,7 +7,11 @@ import { DrinkAlert } from "@/components/room/drink-alert";
 import { JoinForm } from "@/components/room/join-form";
 import { RejoinForm } from "@/components/room/rejoin";
 import { Centered, RoomShell } from "@/components/room/room-shell";
+import { BluffPlayer } from "@/games/bluff/views";
 import { HangmanPlayer } from "@/games/hangman/player";
+import { OddPlayer } from "@/games/odd-one-out/views";
+import { PunchPlayer } from "@/games/punchline/views";
+import { SpotPlayer } from "@/games/spotlight/views";
 import { HlPlayer } from "@/games/higher-lower/views";
 import { NhiePlayer } from "@/games/never-have-i-ever/views";
 import { TriviaPlayer } from "@/games/trivia/views";
@@ -83,6 +87,10 @@ export function RoomClient() {
       {room.kind === "higher-lower" && <HlPlayer {...props} status={status} />}
       {room.kind === "truth-or-drink" && <TodPlayer {...props} status={status} />}
       {room.kind === "trivia" && <TriviaPlayer {...props} status={status} />}
+      {room.kind === "spotlight" && <SpotPlayer {...props} status={status} />}
+      {room.kind === "punchline" && <PunchPlayer {...props} status={status} />}
+      {room.kind === "bluff" && <BluffPlayer {...props} status={status} />}
+      {room.kind === "odd-one-out" && <OddPlayer {...props} status={status} />}
       {room.kind === "hangman" && (
         <RoomShell room={room} status={status} token={token} hostToken={host}>
           <HangmanPlayer {...props} />

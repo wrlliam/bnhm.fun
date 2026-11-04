@@ -102,11 +102,11 @@ function storedTokens(code: string) {
   };
 }
 
-export async function createRoom(kind: string) {
+export async function createRoom(kind: string, options?: Record<string, unknown>) {
   const res = await fetch("/api/rooms", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ kind }),
+    body: JSON.stringify({ kind, options }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error);

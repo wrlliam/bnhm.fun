@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 import { notFound } from "next/navigation";
 import { guideBySlug, GUIDES } from "@/lib/guides";
 import { gameMetadata } from "@/lib/seo";
@@ -20,6 +21,7 @@ export default async function GuidePage({ params }: PageProps<"/how-to-play/[slu
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 sm:pl-20">
+      <SiteNav />
       <Link href="/how-to-play" className="text-xs text-faint hover:text-ink">
         ← All games
       </Link>

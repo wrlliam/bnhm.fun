@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SHARE } from "@/lib/seo";
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 import { GUIDES } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -17,9 +18,7 @@ export default function HowToPlayIndex() {
   const phone = GUIDES.filter((g) => !g.modes.some((m) => m.room));
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10 sm:pl-20">
-      <Link href="/" className="text-xs text-faint hover:text-ink">
-        ← Home
-      </Link>
+      <SiteNav />
       <h1 className="font-hand text-6xl font-bold">How to play</h1>
       <p className="mt-2 text-faint">Rules and setup for every game.</p>
 

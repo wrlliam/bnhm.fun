@@ -6,6 +6,10 @@ import { neverHaveIEver } from "./games/never-have-i-ever";
 import { ringOfFire } from "./games/ring-of-fire";
 import { trivia } from "./games/trivia";
 import { truthOrDrink } from "./games/truth-or-drink";
+import { bluff } from "./games/bluff";
+import { oddOneOut } from "./games/odd-one-out";
+import { punchline } from "./games/punchline";
+import { spotlight } from "./games/spotlight";
 
 export const GAMES: Record<GameKind, GameModule<unknown>> = {
   hangman: hangman as GameModule<unknown>,
@@ -15,6 +19,10 @@ export const GAMES: Record<GameKind, GameModule<unknown>> = {
   "higher-lower": higherLower as GameModule<unknown>,
   "truth-or-drink": truthOrDrink as GameModule<unknown>,
   trivia: trivia as GameModule<unknown>,
+  spotlight: spotlight as GameModule<unknown>,
+  punchline: punchline as GameModule<unknown>,
+  bluff: bluff as GameModule<unknown>,
+  "odd-one-out": oddOneOut as GameModule<unknown>,
 };
 
 export function isGameKind(k: unknown): k is GameKind {
@@ -28,3 +36,7 @@ export type { NhieView as NhieGameView } from "./games/never-have-i-ever";
 export type { RingOfFireView as RofGameView } from "./games/ring-of-fire";
 export type { TodView as TodGameView } from "./games/truth-or-drink";
 export type { TriviaView as TriviaGameView } from "./games/trivia";
+export type { BluffView as BluffGameView } from "./games/bluff";
+export type { OddView as OddGameView } from "./games/odd-one-out";
+export type { PunchView as PunchGameView } from "./games/punchline";
+export type { SpotView as SpotGameView } from "./games/spotlight";

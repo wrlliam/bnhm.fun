@@ -7,7 +7,11 @@ import { JoinQr } from "@/components/room/join-qr";
 import { FloatingReactions } from "@/components/room/reactions";
 import { Recap } from "@/components/room/recap";
 import { Avatar } from "@/components/room/avatar";
+import { BluffTv } from "@/games/bluff/views";
 import { HangmanTv } from "@/games/hangman/tv";
+import { OddTv } from "@/games/odd-one-out/views";
+import { PunchTv } from "@/games/punchline/views";
+import { SpotTv } from "@/games/spotlight/views";
 import { HlTv } from "@/games/higher-lower/views";
 import { NhieTv } from "@/games/never-have-i-ever/views";
 import { TriviaTv } from "@/games/trivia/views";
@@ -81,6 +85,10 @@ export function TvClient() {
       {room.kind === "higher-lower" && <HlTv {...props} />}
       {room.kind === "truth-or-drink" && <TodTv {...props} />}
       {room.kind === "trivia" && <TriviaTv {...props} />}
+      {room.kind === "spotlight" && <SpotTv room={room} />}
+      {room.kind === "punchline" && <PunchTv room={room} />}
+      {room.kind === "bluff" && <BluffTv room={room} />}
+      {room.kind === "odd-one-out" && <OddTv room={room} />}
       {room.isHost && <TvStartBar room={room} />}
       {room.kind === "hangman" && <HangmanTv {...props} />}
     </main>

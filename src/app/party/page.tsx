@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 
 const GAMES = [
   {
@@ -72,11 +73,9 @@ const GAMES = [
 export default function PartyPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 sm:pl-20">
+      <SiteNav />
       <header className="flex items-end justify-between gap-4">
         <h1 className="font-hand text-5xl font-bold">Party cards</h1>
-        <Link href="/" className="text-sm text-faint underline underline-offset-4 hover:text-ink">
-          Hangman
-        </Link>
       </header>
       <p className="mt-2 text-faint">One phone, one deck. Every game has a link so others can follow along.</p>
 

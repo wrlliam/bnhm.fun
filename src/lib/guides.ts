@@ -20,6 +20,89 @@ export type Guide = {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "spotlight",
+    name: "Spotlight",
+    tagline: "Pick a vibe, answer in secret, then see who said what.",
+    players: "3–16",
+    time: "10–30 min",
+    drinking: false,
+    modes: [{ label: "Start a room", href: "/new/spotlight", room: true }],
+    overview:
+      "A secret-vote party game. Pick a pack that suits the group, then flip through questions. Some are yes/no; others put two people from the room in the spotlight and everyone picks one.",
+    setup: [
+      "Start a Spotlight room and pick a pack: Friends, Girls' night, Lads' night, Couples, Work do, Family, Spicy (18+), or Mix it up.",
+      "Choose 10, 20 or 30 questions. They're drawn at random from a bigger pack, so every game is different.",
+      "Optional: anonymous results show the split but hide who voted which way.",
+    ],
+    howToPlay: [
+      "A question appears on the TV and every phone.",
+      "Yes/no questions: tap Yes or No. Pick questions: two random players from the room are shown; tap one.",
+      "You can change your vote until everyone's in. Then the reveal shows the percentage for each option and, unless anonymous, the faces of who voted for it.",
+      "Anyone taps Next to move on.",
+    ],
+    tips: ["Anonymous mode gets more honest answers. Normal mode gets more arguments."],
+  },
+  {
+    slug: "punchline",
+    name: "Punchline",
+    tagline: "Write the funniest answer, then vote head to head.",
+    players: "3–12",
+    time: "15 min",
+    drinking: false,
+    modes: [{ label: "Start a room", href: "/new/punchline", room: true }],
+    overview: "A comedy writing game. Everyone answers prompts on their phone, then the answers battle in pairs while the rest of the room votes.",
+    setup: ["Start a Punchline room. You need at least 3 players."],
+    howToPlay: [
+      "Writing: you get two prompts and 90 seconds. Type the funniest answer you can.",
+      "Face-offs: each prompt shows with the two answers written for it, with no names shown.",
+      "Everyone except the two writers votes for their favourite.",
+      "The reveal shows the split, who wrote what, and the points.",
+      "There are two rounds, and round two scores double.",
+    ],
+    rules: [
+      { title: "Scoring", text: "100 points per vote (200 in round two). Taking every vote is a clean sweep, worth a bonus." },
+      { title: "No answer", text: "If you run out of time your answer shows as '(no answer)' and scores nothing." },
+    ],
+  },
+  {
+    slug: "bluff",
+    name: "Bluff",
+    tagline: "Make up a fake answer to a weird fact and fool your friends.",
+    players: "3–12",
+    time: "15 min",
+    drinking: false,
+    modes: [{ label: "Start a room", href: "/new/bluff", room: true }],
+    overview: "A bluffing game built on strange but true facts. Your lie only has to be more believable than the truth.",
+    setup: ["Start a Bluff room. You need at least 3 players."],
+    howToPlay: [
+      "A fact appears with a word missing, like 'A group of flamingos is called a ___'.",
+      "Everyone writes a believable fake answer. If you accidentally type the real one, you'll be asked to write something else.",
+      "All the lies plus the truth are shuffled together. Pick the one you think is real (you can't pick your own).",
+      "The reveal goes through each lie, who wrote it and who fell for it, then the truth.",
+    ],
+    rules: [{ title: "Scoring", text: "1000 for finding the truth, and 500 for every player who picks your lie." }],
+  },
+  {
+    slug: "odd-one-out",
+    name: "Odd One Out",
+    tagline: "Everyone knows the secret word except one faker.",
+    players: "3–12",
+    time: "5 min a round",
+    drinking: false,
+    modes: [{ label: "Start a room", href: "/new/odd-one-out", room: true }],
+    overview: "A social deduction game. Say just enough to prove you know the word, without giving it away to the faker.",
+    setup: ["Start an Odd One Out room. You need at least 3 players."],
+    howToPlay: [
+      "Press and hold your secret card to peek. Everyone sees the same category and word, except the odd one out, who only sees the category.",
+      "In the order shown, each person says one word linked to the secret word, out loud.",
+      "Tap 'vote' and pick who you think is faking.",
+      "If the faker gets the most votes, they get one guess at the word. Right steals the win; wrong means the group wins.",
+      "A tie, or picking the wrong person, means the faker wins.",
+    ],
+    rules: [{ title: "Scoring", text: "The faker gets 3 for winning. When the group wins, each player gets 1, or 2 if they voted for the faker." }],
+    tips: ["Too obvious and the faker learns the word. Too vague and you look like the faker."],
+  },
+  {
     slug: "ring-of-fire",
     name: "Ring of Fire",
     tagline: "Draw a card, follow its rule. Whoever draws the fourth King drinks the cup.",
@@ -27,7 +110,7 @@ export const GUIDES: Guide[] = [
     time: "30–60 min",
     drinking: true,
     modes: [
-      { label: "Play with phones + TV", href: "/", room: true },
+      { label: "Play with phones + TV", href: "/new/ring-of-fire", room: true },
       { label: "Pass one phone round", href: "/party/ring-of-fire" },
     ],
     overview:
@@ -78,7 +161,7 @@ export const GUIDES: Guide[] = [
     time: "15–30 min",
     drinking: true,
     modes: [
-      { label: "Play with phones + TV", href: "/", room: true },
+      { label: "Play with phones + TV", href: "/new/most-likely-to", room: true },
       { label: "Pass one phone round (point on three)", href: "/party/most-likely-to" },
     ],
     overview:
@@ -103,7 +186,7 @@ export const GUIDES: Guide[] = [
     players: "1–16",
     time: "10 min",
     drinking: false,
-    modes: [{ label: "Start a room", href: "/", room: true }],
+    modes: [{ label: "Start a room", href: "/new/trivia", room: true }],
     overview: "A quick quiz round: 10 general-knowledge questions, 20 seconds each, with a live leaderboard.",
     setup: [
       "Start a Trivia room and share the code (or the QR code on the TV).",
@@ -124,7 +207,7 @@ export const GUIDES: Guide[] = [
     players: "2–16",
     time: "5 min a round",
     drinking: false,
-    modes: [{ label: "Start a room", href: "/", room: true }],
+    modes: [{ label: "Start a room", href: "/new/hangman", room: true }],
     overview: "The classic word-guessing game. The person who picks the word changes every round.",
     setup: [
       "Start a Hangman room and share the code. Everyone joins with a name and an optional photo.",
@@ -149,7 +232,7 @@ export const GUIDES: Guide[] = [
     players: "1+",
     time: "10–20 min",
     drinking: true,
-    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/higher-lower" }],
+    modes: [{ label: "Play with phones + TV", href: "/new/higher-lower", room: true }, { label: "Play (one phone)", href: "/party/higher-lower" }],
     overview: "A quick streak game. The longer your run of correct calls, the more it hurts when you miss.",
     setup: ["Optionally add player names so the game tracks whose turn it is."],
     howToPlay: [
@@ -247,7 +330,7 @@ export const GUIDES: Guide[] = [
     players: "3+",
     time: "Any",
     drinking: true,
-    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/never-have-i-ever" }],
+    modes: [{ label: "Play with phones + TV", href: "/new/never-have-i-ever", room: true }, { label: "Play (one phone)", href: "/party/never-have-i-ever" }],
     overview: "Confessions, one card at a time.",
     setup: ["Optionally add names so the app shows who reads each card."],
     howToPlay: [
@@ -264,7 +347,7 @@ export const GUIDES: Guide[] = [
     players: "2+",
     time: "Any",
     drinking: true,
-    modes: [{ label: "Play with phones + TV", href: "/", room: true }, { label: "Play (one phone)", href: "/party/truth-or-drink" }],
+    modes: [{ label: "Play with phones + TV", href: "/new/truth-or-drink", room: true }, { label: "Play (one phone)", href: "/party/truth-or-drink" }],
     overview: "Personal questions. Every one can be skipped, for a price.",
     setup: ["Optionally add names to track turns."],
     howToPlay: [
