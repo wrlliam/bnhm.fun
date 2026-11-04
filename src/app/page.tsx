@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BRAND, Logo } from "@/components/logo";
 import { createRoom } from "@/lib/rooms/client";
 
 const ROOM_GAMES = [
@@ -57,12 +56,8 @@ export default function Home() {
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-14 sm:pl-20">
-      <h1>
-        <Logo href={null} size={72} textClass="text-7xl sm:text-8xl" />
-        <span className="sr-only">bnhm.fun</span>
-      </h1>
-      <p className="mt-4 text-lg">{BRAND.tagline}.</p>
-      <p className="text-faint">Start a room, share the code, and everyone plays on their own phone. Put it on the TV too.</p>
+      <h1 className="font-hand text-7xl font-bold leading-none">Game night</h1>
+      <p className="mt-2 text-faint">Start a room, share the code, and everyone plays on their own phone. Put it on the TV too.</p>
 
       <form onSubmit={join} className="mt-10 max-w-md">
         <label htmlFor="code" className="text-sm font-medium">

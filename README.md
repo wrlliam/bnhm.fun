@@ -237,14 +237,14 @@ Rooms and their live connections live in one process. To run several instances, 
 
 | Asset | Where |
 | --- | --- |
-| Logo mark: two fanned cards with a heart | `src/components/logo.tsx` (`<LogoMark>`, `<Logo>`); static copy at `docs/logo.svg` |
+| Logo mark: two fanned cards with a heart | `docs/logo.svg` (README and favicon only; not shown on the pages) |
 | Favicon | `src/app/icon.svg` |
 | Apple touch icon (180 px) | `src/app/apple-icon.tsx`, generated with `next/og` |
 | Social share image (1200×630) | `src/app/opengraph-image.tsx`, generated; copy at `docs/banner.png` |
 | Web app manifest (add to home screen) | `src/app/manifest.ts` |
-| Name, tagline, description | `BRAND` in `src/components/logo.tsx` |
+| Name, tagline, description (page metadata) | `BRAND` in `src/lib/brand.ts` |
 
-**Wordmark:** "bnhm" in the theme's heading font, with ".fun" in the accent colour. In the app, the logo uses theme colours, so it fits all 9 themes. The favicon and share image use the Notebook palette: ink `#1f2a44`, paper `#f7f3e8`, accent `#c2412d`.
+The pages themselves carry no logo. The brand appears in the browser tab (title and favicon), in link previews, and on the home-screen icon. The favicon and share image use the Notebook palette: ink `#1f2a44`, paper `#f7f3e8`, accent `#c2412d`.
 
 Set `NEXT_PUBLIC_SITE_URL` (default `https://bnhm.fun`) so share links and preview images point at your own domain.
 

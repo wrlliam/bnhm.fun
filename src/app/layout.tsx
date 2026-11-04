@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Baloo_2, Caveat, Fredoka, Geist, Geist_Mono, Gochi_Hand, Pacifico, Playfair_Display, VT323 } from "next/font/google";
-import { BRAND } from "@/components/logo";
+import { BRAND } from "@/lib/brand";
 import { ThemePicker } from "@/components/theme-picker";
 import { THEME_SCRIPT } from "@/lib/themes";
 import "./globals.css";

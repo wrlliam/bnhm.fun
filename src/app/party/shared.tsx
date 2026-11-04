@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { MAX_PLAYERS, newSeed, shuffle } from "@/lib/cards";
@@ -56,7 +55,6 @@ export function GameShell({
   const pathname = usePathname();
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 sm:pl-20">
-      <Logo size={28} textClass="text-2xl" className="mb-3" />
       <header className="flex items-end justify-between gap-4">
         <h1 className="font-hand text-5xl font-bold">{title}</h1>
         <span className="flex gap-4 text-sm">

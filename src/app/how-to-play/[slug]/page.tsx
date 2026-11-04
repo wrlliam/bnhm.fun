@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { notFound } from "next/navigation";
 import { guideBySlug, GUIDES } from "@/lib/guides";
 import { RANK_ORDER, RULES } from "@/lib/ring-of-fire";
@@ -20,7 +19,6 @@ export default async function GuidePage({ params }: PageProps<"/how-to-play/[slu
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 sm:pl-20">
-      <Logo size={28} textClass="text-2xl" className="mb-4" />
       <Link href="/how-to-play" className="text-xs text-faint hover:text-ink">
         ← All games
       </Link>

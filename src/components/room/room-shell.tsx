@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type RoomView, roomAction, saveToken, type StreamStatus } from "@/lib/rooms/client";
-import { LogoMark } from "@/components/logo";
 import { AdminAccess } from "./admin-access";
 import { Avatar } from "./avatar";
 import { JoinForm } from "./join-form";
@@ -47,9 +46,6 @@ export function RoomShell({
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-5 py-5 sm:pl-20">
       <header className="flex items-center gap-3">
-        <Link href="/" aria-label="bnhm.fun home" className="shrink-0">
-          <LogoMark size={30} />
-        </Link>
         {me && <Avatar player={me} size={36} />}
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-hand text-3xl font-bold leading-none">{room.title}</h1>

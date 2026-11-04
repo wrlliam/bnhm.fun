@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { GUIDES } from "@/lib/guides";
 
 export const metadata: Metadata = { title: "How to play" };
@@ -10,7 +9,6 @@ export default function HowToPlayIndex() {
   const phone = GUIDES.filter((g) => !g.modes.some((m) => m.room));
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10 sm:pl-20">
-      <Logo size={28} textClass="text-2xl" className="mb-4" />
       <Link href="/" className="text-xs text-faint hover:text-ink">
         ← Home
       </Link>

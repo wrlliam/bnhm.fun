@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AdminLogin } from "@/components/room/admin-access";
-import { Logo } from "@/components/logo";
 import { Avatar } from "@/components/room/avatar";
 import { HangmanTv } from "@/games/hangman/tv";
 import { MltTv } from "@/games/most-likely-to/tv";
@@ -32,13 +31,10 @@ export function TvClient() {
   return (
     <main className="flex min-h-screen flex-col px-10 py-8 pl-24">
       <header className="mb-8 flex items-start justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <Logo href={null} size={56} textClass="text-5xl" />
         <div className="flex -space-x-3">
           {room.players.map((p) => (
             <Avatar key={p.id} player={p} size={48} dim={!p.online} ring="ring-paper" />
           ))}
-        </div>
         </div>
         <div className="text-right">
           <p className="text-lg text-faint">
