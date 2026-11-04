@@ -19,6 +19,7 @@ import {
   type Actor,
   updateProfile,
 } from "./core";
+import { track } from "@/lib/analytics";
 import { MAX_ROOMS } from "./limits";
 import { roomsReady } from "./persist";
 import { GAMES, isGameKind } from "./registry";
@@ -32,6 +33,7 @@ export function create(kind: unknown) {
   if (!isGameKind(kind)) throw new GameError("Unknown game");
   if (rooms.size >= MAX_ROOMS) throw new GameError("The server is full right now — try again later", 503);
   const room = createRoom(kind as GameKind, GAMES[kind].init);
+  track("room_created", kind);
   return { code: room.code, hostToken: room.hostToken, adminPassword: room.adminPassword };
 }
 
@@ -69,6 +71,7 @@ export function perform(code: string, body: Body) {
     case "join": {
       const player = addPlayer(room, body.name, body.avatar, actor.isHost, body.group);
       mod.onJoin?.(room, player);
+      track("player_joined", room.kind);
       result = { playerId: player.id, token: player.token };
       break;
     }
@@ -95,6 +98,7 @@ export function perform(code: string, body: Body) {
     case "react": {
       if (!actor.player) throw new GameError("Join the room first", 403);
       react(room, actor.player.id, body.emoji);
+      track("reaction");
       break;
     }
     case "recap": {
@@ -123,6 +127,7 @@ export function perform(code: string, body: Body) {
     }
     default:
       mod.act(room, actor, body);
+      if (body.type === "start") track("game_started", room.kind);
   }
 
   changed(room);

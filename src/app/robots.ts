@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // live rooms and TV screens are private and short-lived; the API isn't for crawlers
-      disallow: ["/r/", "/tv/", "/api/"],
+      disallow: ["/r/", "/tv/", "/api/", "/stats"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
