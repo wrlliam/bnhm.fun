@@ -12,15 +12,18 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
 # ---- build: produce the standalone Next.js server ----
-FROM oven/bun:${BUN_VERSION}-alpine AS build
+# Runs on Node, not Bun: `bun run build` can segfault (exit 139) on some x86
+# hosts/VMs. Same Alpine/musl base as `deps`, so native modules still match.
+FROM node:${NODE_VERSION}-alpine AS build
 WORKDIR /app
 # public URL for share previews; baked in at build time
 ARG NEXT_PUBLIC_SITE_URL=https://bnhm.fun
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
+    NODE_OPTIONS=--max-old-space-size=2048
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN bun run build
+RUN node node_modules/next/dist/bin/next build
 
 # ---- run: minimal image with just the standalone output ----
 FROM node:${NODE_VERSION}-alpine AS run

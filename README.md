@@ -163,7 +163,7 @@ These wrap plain `docker compose` commands (see `package.json`).
 
 | File                      | Purpose                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------------- |
-| `Dockerfile`              | Multi-stage build: Bun installs and builds, then Next's standalone server runs on `node:22-alpine` as a non-root user |
+| `Dockerfile`              | Multi-stage build: Bun installs dependencies, Node runs `next build` (Bun's build can segfault on some x86 hosts), then Next's standalone server runs on `node:22-alpine` as a non-root user. Tested on amd64 and arm64 |
 | `docker-compose.yml`      | `app` service (health check, log rotation, restart policy) plus an optional `tunnel` service (Cloudflare) |
 | `docker-compose.dev.yml`  | Hot-reload dev container                                                                     |
 | `docker/Caddyfile.example` | Site block to paste into **your own** Caddy. The live-update stream (`/api/rooms/*/stream`) is never buffered or compressed |
