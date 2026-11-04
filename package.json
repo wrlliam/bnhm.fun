@@ -8,11 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "docker:up": "docker compose up -d --build",
-    "docker:proxy": "docker compose --profile proxy up -d --build",
     "docker:dev": "docker compose -f docker-compose.dev.yml up --build",
     "docker:logs": "docker compose logs -f app",
-    "docker:down": "docker compose --profile proxy --profile tunnel down",
-    "docker:tunnel": "docker compose --profile tunnel up -d --build && sleep 6 && docker compose logs tunnel | grep -o 'https://[a-z0-9-]*\\.trycloudflare\\.com' | tail -1"
+    "docker:down": "docker compose --profile tunnel down",
+    "docker:tunnel": "docker compose --profile tunnel up -d --build && sleep 6 && docker compose logs tunnel | grep -o 'https://[a-z0-9-]*\\.trycloudflare\\.com' | tail -1",
+    "icons": "bun scripts/generate-icons.ts"
   },
   "dependencies": {
     "next": "16.4.4",

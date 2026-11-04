@@ -1,8 +1,8 @@
 # Production:
 #   docker compose up -d --build                    → app on http://localhost:${PORT:-3000}
-#   docker compose --profile proxy up -d --build    → plus Caddy on :80/:443 (HTTPS if DOMAIN is set)
 #   docker compose --profile tunnel up -d --build   → plus a public https://*.trycloudflare.com URL
 #                                                     (no domain or port-forwarding needed)
+# HTTPS: point your own reverse proxy at the app — see docker/Caddyfile.example.
 # Run a single app replica: rooms are kept in memory.
 
 name: bnhm-fun
@@ -23,7 +23,9 @@ services:
       NODE_ENV: production
       PORT: 3000
     ports:
-      - "${PORT:-3000}:3000"
+      # BIND=127.0.0.1 keeps the app reachable only from this machine (e.g. behind
+      # a Caddy running on the host). Default listens on all interfaces.
+      - "${BIND:-0.0.0.0}:${PORT:-3000}:3000"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -36,24 +38,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-  proxy:
-    image: caddy:2-alpine
-    profiles: ["proxy"]
-    restart: unless-stopped
-    depends_on:
-      app:
-        condition: service_healthy
-    environment:
-      DOMAIN: ${DOMAIN:-:80}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
 
   # Instant public URL through Cloudflare, no account needed. The URL is printed
   # in the logs:  docker compose logs tunnel | grep trycloudflare
@@ -68,7 +52,3 @@ services:
         condition: service_healthy
     # http2 over TCP: works on networks that block QUIC/UDP
     command: tunnel --no-autoupdate --protocol http2 --url http://app:3000
-
-volumes:
-  caddy_data:
-  caddy_config:

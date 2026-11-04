@@ -1,0 +1,29 @@
+# Site block for an existing Caddy instance. Paste into your Caddyfile,
+# change the domain and upstream, then `caddy reload`.
+#
+# Upstream:
+#   Caddy on the same host as Docker  → localhost:3000   (set BIND=127.0.0.1 in .env)
+#   Caddy in Docker on a shared network → app:3000 / bnhm-fun-app-1:3000
+#   Caddy on another machine           → <docker-host-ip>:3000
+
+bnhm.fun {
+	encode zstd gzip
+
+	# Live updates use Server-Sent Events: stream them straight through,
+	# never buffered or compressed.
+	@stream path /api/rooms/*/stream
+	handle @stream {
+		reverse_proxy localhost:3000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy localhost:3000
+	}
+}
+
+# Optional: redirect www to the bare domain
+# www.bnhm.fun {
+# 	redir https://bnhm.fun{uri} permanent
+# }
