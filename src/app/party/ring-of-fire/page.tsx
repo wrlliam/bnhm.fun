@@ -129,7 +129,7 @@ function RingOfFire() {
           <button
             onClick={() => game.push(".")}
             disabled={done}
-            className="mt-8 rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40"
+            className="mt-8 rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
           >
             {done ? "Deck finished" : card ? "Draw next card" : "Draw first card"}
           </button>

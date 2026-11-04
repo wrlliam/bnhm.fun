@@ -136,25 +136,25 @@ export function RofTv({ room, hostToken }: RofProps) {
               <button
                 onClick={() => act(room, null, hostToken, { type: "draw" })}
                 disabled={!!g.current?.pending || g.status !== "playing" || room.waitingOn.length > 0}
-                className="rounded border-2 border-ink px-2 py-1 hover:bg-ink hover:text-paper disabled:opacity-40"
+                className="rounded-md border border-ink/30 px-2 py-1 transition-colors hover:bg-ink hover:text-paper disabled:opacity-40"
               >
                 Draw for {nameOf(room, g.turnPlayerId)}
               </button>
               <button
                 onClick={() => act(room, null, hostToken, { type: "skip" })}
-                className="rounded border-2 border-ink px-2 py-1 hover:bg-ink hover:text-paper"
+                className="rounded-md border border-ink/30 px-2 py-1 transition-colors hover:bg-ink hover:text-paper"
               >
                 Skip turn
               </button>
               <button
                 onClick={() => setShowPairs((s) => !s)}
-                className="rounded border-2 border-ink px-2 py-1 hover:bg-ink hover:text-paper"
+                className="rounded-md border border-ink/30 px-2 py-1 transition-colors hover:bg-ink hover:text-paper"
               >
                 Partners
               </button>
               <button
                 onClick={() => setShowSettings((s) => !s)}
-                className="rounded border-2 border-ink px-2 py-1 hover:bg-ink hover:text-paper"
+                className="rounded-md border border-ink/30 px-2 py-1 transition-colors hover:bg-ink hover:text-paper"
               >
                 Cards on/off
               </button>

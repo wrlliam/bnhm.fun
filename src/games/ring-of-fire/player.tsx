@@ -86,7 +86,7 @@ function Lobby({ room, token, hostToken }: RofProps) {
           </BigButton>
           <button
             onClick={() => openTv(room.code)}
-            className="w-full rounded-md border-2 border-ink py-3 font-medium transition hover:bg-ink hover:text-paper"
+            className="w-full rounded-md border-2 border-ink py-3 font-medium transition-colors hover:bg-ink hover:text-paper"
           >
             Open the TV screen
           </button>
@@ -160,7 +160,7 @@ function InGame({ room, token, hostToken }: RofProps) {
       ) : myTurn ? (
         <button
           onClick={() => act(room, token, hostToken, { type: "draw" })}
-          className="pop w-full rounded-2xl bg-hit px-6 py-8 text-center text-paper shadow-md transition active:scale-[0.98]"
+          className="pop w-full rounded-2xl bg-hit px-6 py-8 text-center text-paper shadow-md transition-[transform,background-color,border-color,color,opacity] active:scale-[0.98]"
         >
           <span className="block font-hand text-6xl font-bold leading-none">Your turn</span>
           <span className="mt-2 block text-lg">Tap here to draw a card</span>
@@ -224,7 +224,7 @@ function LastCard({ room }: { room: RoomView }) {
   const rule = RULES[cur.card.rank];
   const fourthKing = cur.card.rank === "K" && g.kings >= 4 && !cur.pending;
   return (
-    <div key={g.drawnCount} className="pop rounded-2xl border-2 border-ink bg-surface p-4">
+    <div key={g.drawnCount} className="pop rounded-2xl border border-ink/15 bg-surface p-4">
       <div className="flex gap-4">
         <PlayingCard card={cur.card} />
         <div className="min-w-0">

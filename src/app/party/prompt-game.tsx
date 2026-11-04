@@ -33,7 +33,7 @@ export function PromptGame({
         {done ? (
           <h2 className="font-hand text-5xl font-bold">That&rsquo;s every card. Hit “New deck” to go again.</h2>
         ) : (
-          <div key={i} className="pop rounded-2xl border-2 border-ink bg-surface p-8 shadow-sm">
+          <div key={i} className="pop rounded-2xl border border-ink/15 bg-surface p-8">
             {reader && <p className="text-sm text-faint">{reader} reads</p>}
             <p className="mt-2 font-hand text-5xl font-bold leading-tight">
               {prefix && <span className="text-faint">{prefix} </span>}
@@ -45,7 +45,7 @@ export function PromptGame({
         <button
           onClick={() => game.push(".")}
           disabled={done}
-          className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40"
+          className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
         >
           Next card
         </button>

@@ -42,7 +42,7 @@ export function NhiePlayer({ room, token, hostToken, status }: Props) {
                   <button
                     key={label}
                     onClick={() => act(room, token, null, { type: "answer", have })}
-                    className={`rounded-2xl border-2 py-6 text-xl font-bold transition ${
+                    className={`rounded-2xl border-2 py-6 text-xl font-bold transition-colors ${
                       g.myAnswer === have ? (have ? "border-miss bg-miss text-paper" : "border-hit bg-hit text-paper") : "border-ink/30 hover:border-ink"
                     }`}
                   >

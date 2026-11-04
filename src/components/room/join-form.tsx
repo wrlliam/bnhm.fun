@@ -54,7 +54,7 @@ export function JoinForm({
         <button
           type="button"
           onClick={() => file.current?.click()}
-          className="group relative size-24 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-ink/50 transition hover:border-ink"
+          className="group relative size-24 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-ink/50 transition-colors hover:border-ink"
           aria-label={avatar ? "Change photo" : "Add a photo"}
         >
           {avatar ? (
@@ -123,7 +123,7 @@ export function JoinForm({
               type="button"
               aria-pressed={group === value}
               onClick={() => setGroup(value)}
-              className={`flex-1 rounded-md border-2 py-2 text-sm font-medium transition ${
+              className={`flex-1 rounded-md border-2 py-2 text-sm font-medium transition-colors ${
                 group === value ? "border-ink bg-ink text-paper" : "border-ink/30 hover:border-ink"
               }`}
             >
@@ -138,7 +138,7 @@ export function JoinForm({
 
       <button
         disabled={busy || !name.trim()}
-        className="mt-8 w-full rounded-md bg-ink py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40"
+        className="mt-8 w-full rounded-md bg-ink py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
       >
         {busy ? "…" : submitLabel}
       </button>

@@ -78,7 +78,7 @@ export default async function GuidePage({ params }: PageProps<"/how-to-play/[slu
 
       {g.cardTable && (
         <Block title="What each card means">
-          <div className="divide-y divide-ink/10 rounded-xl border-2 border-ink bg-surface">
+          <div className="divide-y divide-ink/10 rounded-xl border border-ink/15 bg-surface">
             {RANK_ORDER.map((r) => {
               const rule = RULES[r];
               return (

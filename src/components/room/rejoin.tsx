@@ -48,7 +48,7 @@ export function RejoinForm({ room }: { room: RoomView }) {
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
             placeholder="PIN"
-            className="w-28 rounded-md border-2 border-ink bg-paper px-3 py-2 text-center font-mono text-2xl tracking-[0.3em] outline-none"
+            className="w-28 rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-2 text-center font-mono text-2xl tracking-[0.3em] outline-none"
           />
           <button disabled={pin.length !== 4} className="rounded-md bg-ink px-4 font-medium text-paper disabled:opacity-40">
             Rejoin

@@ -81,7 +81,7 @@ export function Chooser({ room, token, hostToken }: RofProps) {
   const candidates = room.players.filter((p) => !(choice.kind === "mate" && p.id === cur.by));
   const unknown = room.players.filter((p) => !p.group);
   return (
-    <div className="mt-6 rounded-xl border-2 border-ink bg-surface p-5">
+    <div className="mt-6 rounded-xl border border-ink/15 bg-surface p-5">
       <p className="font-medium">{choice.prompt}</p>
       {choice.kind === "many" && unknown.length > 0 && (
         <p className="mt-1 text-sm text-faint">
@@ -101,7 +101,7 @@ export function Chooser({ room, token, hostToken }: RofProps) {
               onClick={() =>
                 choice.kind === "many" ? setPicked((x) => (on ? x.filter((i) => i !== p.id) : [...x, p.id])) : send([p.id])
               }
-              className={`flex items-center gap-2 rounded-lg border-2 p-2 text-left transition ${
+              className={`flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-colors ${
                 alreadyMate ? "cursor-not-allowed border-ink/10 opacity-40" : on ? "border-hit bg-hit/10" : "border-ink/20 hover:border-ink"
               }`}
             >
@@ -150,7 +150,7 @@ export function CardSettings({
               key={r}
               onClick={() => toggle(r)}
               aria-pressed={!off}
-              className={`rounded-md border-2 px-2 py-1.5 text-left text-xs transition ${
+              className={`rounded-md border-2 px-2 py-1.5 text-left text-xs transition-colors ${
                 off ? "border-faint/30 text-faint line-through" : "border-ink bg-surface hover:bg-ink/5"
               }`}
             >
@@ -237,7 +237,7 @@ export function PairsEditor({ room, hostToken }: { room: RoomView; hostToken: st
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [both, setBoth] = useState(true);
-  const select = "min-w-0 flex-1 rounded-md border-2 border-ink bg-paper px-2 py-1.5";
+  const select = "min-w-0 flex-1 rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-2 py-1.5";
 
   return (
     <div className="space-y-3 text-sm">
@@ -331,7 +331,7 @@ function JackChooser({
   const canVote = g.rules.length > 0;
 
   return (
-    <div className="mt-6 rounded-xl border-2 border-ink bg-surface p-5">
+    <div className="mt-6 rounded-xl border border-ink/15 bg-surface p-5">
       <p className="font-medium">Your Jack — pick one:</p>
       {canVote && (
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
@@ -416,7 +416,7 @@ export function RuleVote({ room, token, hostToken, big = false }: RofProps & { b
   const mine = room.me ? v.votes[room.me] : undefined;
 
   return (
-    <div className={`pop rounded-2xl border-2 border-ink bg-surface p-5 ${big ? "text-2xl" : ""}`}>
+    <div className={`pop rounded-2xl border border-ink/15 bg-surface p-5 ${big ? "text-2xl" : ""}`}>
       <p className="text-faint">{nameOf(room, v.by)} used a Jack to call a vote</p>
       <h3 className={`font-hand font-bold leading-tight ${big ? "text-6xl" : "text-4xl"}`}>Scrap the rule “{v.text}”?</h3>
       {room.me && !big && (
@@ -430,7 +430,7 @@ export function RuleVote({ room, token, hostToken, big = false }: RofProps & { b
             <button
               key={label}
               onClick={() => act(room, token, null, { type: "ruleVote", yes: val })}
-              className={`rounded-xl border-2 py-4 text-lg font-bold transition ${
+              className={`rounded-xl border-2 py-4 text-lg font-bold transition-colors ${
                 mine === val ? (val ? "border-hit bg-hit text-paper" : "border-miss bg-miss text-paper") : "border-ink/30 hover:border-ink"
               }`}
             >

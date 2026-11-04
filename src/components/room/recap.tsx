@@ -29,7 +29,7 @@ export function Recap({ room, big = false }: { room: RoomView; big?: boolean }) 
     <div className={big ? "text-2xl" : ""}>
       <div className={`grid gap-3 ${big ? "grid-cols-3" : "grid-cols-1 sm:grid-cols-3"}`}>
         {awards.map((a) => (
-          <div key={a.title} className="pop flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-3">
+          <div key={a.title} className="pop flex items-center gap-3 rounded-2xl border border-ink/15 bg-surface p-3">
             <Avatar player={player(a.who.id)} size={big ? 64 : 44} />
             <div>
               <p className={`text-faint ${big ? "text-base" : "text-xs"}`}>{a.title}</p>

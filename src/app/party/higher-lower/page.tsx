@@ -158,19 +158,19 @@ function HigherLower() {
             <div className="mt-8 flex flex-wrap gap-3">
               <button
                 onClick={() => game.push("H")}
-                className="rounded-md bg-ink px-8 py-3 font-medium text-paper transition hover:bg-ink/90"
+                className="rounded-md bg-ink px-8 py-3 font-medium text-paper transition-colors hover:bg-ink/90"
               >
                 ↑ Higher
               </button>
               <button
                 onClick={() => game.push("L")}
-                className="rounded-md border-2 border-ink px-8 py-3 font-medium transition hover:bg-ink hover:text-paper"
+                className="rounded-md border-2 border-ink px-8 py-3 font-medium transition-colors hover:bg-ink hover:text-paper"
               >
                 ↓ Lower
               </button>
               <button
                 onClick={() => game.push("E")}
-                className="rounded-md border-2 border-dashed border-ink px-6 py-3 font-medium transition hover:bg-ink hover:text-paper"
+                className="rounded-md border-2 border-dashed border-ink px-6 py-3 font-medium transition-colors hover:bg-ink hover:text-paper"
               >
                 = Equal
               </button>

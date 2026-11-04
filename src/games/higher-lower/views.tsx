@@ -78,7 +78,7 @@ export function HlPlayer({ room, token, hostToken, status }: Props) {
                     key={m}
                     disabled={blocked}
                     onClick={() => act(room, token, null, { type: "guess", move: m })}
-                    className={`rounded-2xl py-6 text-xl font-bold transition active:scale-95 ${
+                    className={`rounded-2xl py-6 text-xl font-bold transition-[transform,background-color,border-color,color,opacity] active:scale-95 ${
                       m === "E" ? "border-2 border-dashed border-ink" : "bg-ink text-paper"
                     }`}
                   >

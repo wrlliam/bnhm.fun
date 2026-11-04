@@ -22,7 +22,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "spotlight",
     name: "Spotlight",
-    tagline: "Pick a vibe, answer in secret, then see who said what.",
+    tagline: "Pick a vibe, answer in secret, then see who said what",
     players: "3–16",
     time: "10–30 min",
     drinking: false,
@@ -45,7 +45,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "punchline",
     name: "Punchline",
-    tagline: "Write the funniest answer, then vote head to head.",
+    tagline: "Write the funniest answer, then vote head to head",
     players: "3–12",
     time: "15 min",
     drinking: false,
@@ -67,7 +67,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "bluff",
     name: "Bluff",
-    tagline: "Make up a fake answer to a weird fact and fool your friends.",
+    tagline: "Make up a fake answer to a weird fact and fool your friends",
     players: "3–12",
     time: "15 min",
     drinking: false,
@@ -85,7 +85,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "odd-one-out",
     name: "Odd One Out",
-    tagline: "Everyone knows the secret word except one faker.",
+    tagline: "Everyone knows the secret word except one faker",
     players: "3–12",
     time: "5 min a round",
     drinking: false,
@@ -105,7 +105,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "ring-of-fire",
     name: "Ring of Fire",
-    tagline: "Draw a card, follow its rule. Whoever draws the fourth King drinks the cup.",
+    tagline: "Draw a card, follow its rule. Whoever draws the fourth King drinks the cup",
     players: "3–12",
     time: "30–60 min",
     drinking: true,
@@ -156,7 +156,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "most-likely-to",
     name: "Most Likely To",
-    tagline: "Secret vote on who fits the card best. One sip per vote you get.",
+    tagline: "Secret vote on who fits the card best. One sip per vote you get",
     players: "3–16",
     time: "15–30 min",
     drinking: true,
@@ -182,7 +182,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "trivia",
     name: "Trivia",
-    tagline: "Questions on the TV, answers on your phone. Fast right answers score the most.",
+    tagline: "Questions on the TV, answers on your phone. Fast right answers score the most",
     players: "1–16",
     time: "10 min",
     drinking: false,
@@ -203,7 +203,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "hangman",
     name: "Hangman",
-    tagline: "One person picks a word; everyone else guesses letters before the stickman is drawn.",
+    tagline: "One person picks a word; everyone else guesses letters before the stickman is drawn",
     players: "2–16",
     time: "5 min a round",
     drinking: false,
@@ -228,7 +228,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "higher-lower",
     name: "Higher or Lower",
-    tagline: "Call the next card higher, lower or equal. Miss and drink for your whole streak.",
+    tagline: "Call the next card higher, lower or equal. Miss and drink for your whole streak",
     players: "1+",
     time: "10–20 min",
     drinking: true,
@@ -250,7 +250,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "ride-the-bus",
     name: "Ride the Bus",
-    tagline: "Four right calls in a row to get off the bus.",
+    tagline: "Four right calls in a row to get off the bus",
     players: "1+",
     time: "10–20 min",
     drinking: true,
@@ -272,7 +272,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "pyramid",
     name: "Pyramid",
-    tagline: "Memorise your hand, flip the pyramid, hand out drinks for matches.",
+    tagline: "Memorise your hand, flip the pyramid, hand out drinks for matches",
     players: "2–9",
     time: "15 min",
     drinking: true,
@@ -290,7 +290,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "beat-the-dealer",
     name: "Beat the Dealer",
-    tagline: "Guess the dealer's card in two tries. Miss and drink the gap.",
+    tagline: "Guess the dealer's card in two tries. Miss and drink the gap",
     players: "2+",
     time: "15–30 min",
     drinking: true,
@@ -309,7 +309,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "horse-race",
     name: "Horse Race",
-    tagline: "Bet sips on an Ace. The deck decides who wins.",
+    tagline: "Bet sips on an Ace. The deck decides who wins",
     players: "2+",
     time: "5–10 min",
     drinking: true,
@@ -326,7 +326,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "never-have-i-ever",
     name: "Never Have I Ever",
-    tagline: "Read the card. If you've done it, you drink.",
+    tagline: "Read the card. If you've done it, you drink",
     players: "3+",
     time: "Any",
     drinking: true,
@@ -343,7 +343,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "truth-or-drink",
     name: "Truth or Drink",
-    tagline: "Answer honestly, or drink to dodge the question.",
+    tagline: "Answer honestly, or drink to dodge the question",
     players: "2+",
     time: "Any",
     drinking: true,
@@ -359,7 +359,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "would-you-rather",
     name: "Would You Rather",
-    tagline: "Pick a side on three. The smaller side drinks.",
+    tagline: "Pick a side on three. The smaller side drinks",
     players: "3+",
     time: "Any",
     drinking: true,
@@ -375,7 +375,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "card-dealer",
     name: "Card dealer",
-    tagline: "Shuffle and deal hands to everyone, each with a private link.",
+    tagline: "Shuffle and deal hands to everyone, each with a private link",
     players: "1–10",
     time: "—",
     drinking: false,

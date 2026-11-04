@@ -47,7 +47,7 @@ export default function TvEntry() {
           maxLength={4}
           placeholder="CODE"
           autoComplete="off"
-          className="mt-1 w-full rounded-md border-2 border-ink bg-paper px-3 py-3 text-center font-mono text-4xl tracking-[0.4em] outline-none placeholder:text-faint/50"
+          className="mt-1 w-full rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-3 text-center font-mono text-4xl tracking-[0.4em] outline-none placeholder:text-faint/50"
         />
 
         <label htmlFor="tv-pw" className="mt-6 block text-sm font-medium">
@@ -61,7 +61,7 @@ export default function TvEntry() {
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          className="mt-1 w-full rounded-md border-2 border-ink bg-paper px-3 py-3 text-center font-mono text-2xl tracking-wider outline-none placeholder:text-faint/50"
+          className="mt-1 w-full rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-3 text-center font-mono text-2xl tracking-wider outline-none placeholder:text-faint/50"
         />
 
         <button

@@ -68,7 +68,7 @@ export function SettingsPanel() {
                   role="radio"
                   aria-checked={theme === t.id}
                   onClick={() => setTheme(t.id)}
-                  className={`rounded-xl p-0.5 text-left transition ${
+                  className={`rounded-xl p-0.5 text-left transition-colors ${
                     theme === t.id ? "ring-2 ring-hit ring-offset-2 ring-offset-surface" : "hover:ring-1 hover:ring-ink/20"
                   }`}
                 >
@@ -178,7 +178,7 @@ function Segmented<T extends string>({
           aria-checked={value === v}
           title={title}
           onClick={() => onChange(v)}
-          className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition ${
+          className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
             value === v ? "bg-surface shadow-sm" : "text-faint hover:text-ink"
           }`}
         >
@@ -211,7 +211,7 @@ function Toggle({
         <span className="block text-sm font-medium">{label}</span>
         <span className="block text-xs text-faint">{hint}</span>
       </span>
-      <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-hit" : "bg-ink/20"}`}>
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-hit" : "bg-ink/20"}`}>
         <span
           className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-[left] ${checked ? "left-[1.375rem]" : "left-0.5"}`}
         />

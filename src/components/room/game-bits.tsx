@@ -39,7 +39,7 @@ export function GameLobby({
           </BigButton>
           <button
             onClick={() => openTv(room.code)}
-            className="w-full rounded-md border-2 border-ink py-3 font-medium transition hover:bg-ink hover:text-paper"
+            className="w-full rounded-md border-2 border-ink py-3 font-medium transition-colors hover:bg-ink hover:text-paper"
           >
             Open the TV screen
           </button>
@@ -118,7 +118,7 @@ export function PlayerPicker({
           <button
             key={p.id}
             onClick={() => onPick(p.id)}
-            className={`flex items-center gap-2 rounded-lg border-2 p-2 text-left transition ${
+            className={`flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-colors ${
               selected === p.id ? "border-hit bg-hit/10" : "border-ink/20 hover:border-ink"
             }`}
           >

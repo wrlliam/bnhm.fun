@@ -75,7 +75,7 @@ export function TriviaPlayer({ room, token, hostToken, status }: Props) {
                   key={i}
                   disabled={g.myAnswer !== null || revealed}
                   onClick={() => act(room, token, null, { type: "answer", choice: i })}
-                  className={`flex items-center gap-3 rounded-2xl p-4 text-left text-lg font-bold text-white transition active:scale-[0.98] ${COLORS[i]} ${
+                  className={`flex items-center gap-3 rounded-2xl p-4 text-left text-lg font-bold text-white transition-[transform,background-color,border-color,color,opacity] active:scale-[0.98] ${COLORS[i]} ${
                     revealed ? (right ? "ring-4 ring-hit ring-offset-2 ring-offset-paper" : "opacity-30") : g.myAnswer !== null && !picked ? "opacity-40" : ""
                   }`}
                 >

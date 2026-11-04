@@ -78,7 +78,7 @@ export default function StatsPage() {
             value={key}
             onChange={(e) => setKey(e.target.value)}
             autoFocus
-            className="mt-6 w-full rounded-md border-2 border-ink bg-paper px-3 py-3 font-mono outline-none"
+            className="mt-6 w-full rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-3 font-mono outline-none"
             aria-label="Stats key"
           />
           <button className="mt-4 w-full rounded-md bg-ink py-3 font-medium text-paper">Show stats</button>

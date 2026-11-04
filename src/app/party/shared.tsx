@@ -123,11 +123,11 @@ export function PlayerSetup({
         onChange={(e) => setNames(e.target.value.replace(/,/g, "\n"))}
         rows={4}
         placeholder={"Sam\nAlex\nJo"}
-        className="mt-1 w-full resize-none rounded-md border-2 border-ink bg-paper px-3 py-2 font-hand text-2xl leading-8 outline-none placeholder:text-faint/50"
+        className="mt-1 w-full resize-none rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-2 font-hand text-2xl leading-8 outline-none placeholder:text-faint/50"
       />
       <button
         disabled={!enough}
-        className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40"
+        className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
       >
         Shuffle &amp; start
       </button>
@@ -150,7 +150,7 @@ export function GameToolbar({ game, left }: { game: ReturnType<typeof useDeckGam
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="rounded-md border-2 border-ink px-3 py-1.5 font-medium transition hover:bg-ink hover:text-paper"
+        className="rounded-md border-2 border-ink px-3 py-1.5 font-medium transition-colors hover:bg-ink hover:text-paper"
       >
         {copied ? "Copied" : "Copy game link"}
       </button>

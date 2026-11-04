@@ -49,7 +49,7 @@ export function DrinkAlert({ room, token }: { room: RoomView; token: string }) {
           if (!res.ok) setSent((s) => ((s = new Set(s)), s.delete(d.id), s));
           setBusy(false);
         }}
-        className="mt-10 w-full max-w-xs rounded-2xl bg-paper py-5 text-2xl font-bold text-miss shadow-lg transition active:scale-95 disabled:opacity-60"
+        className="mt-10 w-full max-w-xs rounded-2xl bg-paper py-5 text-2xl font-bold text-miss shadow-lg transition-[transform,background-color,border-color,color,opacity] active:scale-95 disabled:opacity-60"
       >
         {words.done}
       </button>

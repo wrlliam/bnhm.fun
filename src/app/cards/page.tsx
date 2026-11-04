@@ -81,7 +81,7 @@ function Setup() {
         onChange={(e) => setNames(e.target.value.replace(/,/g, "\n"))}
         rows={4}
         placeholder={"Sam\nAlex\nJo"}
-        className="mt-1 w-full resize-none rounded-md border-2 border-ink bg-paper px-3 py-2 font-hand text-2xl leading-8 outline-none placeholder:text-faint/50"
+        className="mt-1 w-full resize-none rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-2 font-hand text-2xl leading-8 outline-none placeholder:text-faint/50"
       />
       <label htmlFor="per" className="mt-6 block text-sm font-medium">
         Cards per hand: <span className="font-mono">{n}</span>
@@ -97,7 +97,7 @@ function Setup() {
       />
       <button
         disabled={players.length === 0}
-        className="mt-8 rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40"
+        className="mt-8 rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
       >
         Deal {players.length > 0 ? `${players.length} ${players.length === 1 ? "hand" : "hands"}` : ""}
       </button>
@@ -116,7 +116,7 @@ function Table({ d }: { d: Deal }) {
         <CopyButton query={dealToQuery(d)} label="Copy table link" primary />
         <button
           onClick={() => router.push(`/cards?${dealToQuery({ ...d, seed: newSeed() })}`)}
-          className="rounded-md border-2 border-ink px-4 py-2 text-sm font-medium transition hover:bg-ink hover:text-paper"
+          className="rounded-md border-2 border-ink px-4 py-2 text-sm font-medium transition-colors hover:bg-ink hover:text-paper"
         >
           Shuffle &amp; re-deal
         </button>
@@ -152,7 +152,7 @@ function OwnHand({ d, me }: { d: Deal; me: number }) {
       <Hand cards={hand} hidden={!shown} />
       <button
         onClick={() => setShown((s) => !s)}
-        className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90"
+        className="mt-6 rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90"
       >
         {shown ? "Hide cards" : "Reveal my cards"}
       </button>
@@ -182,7 +182,7 @@ function CopyButton({ query, label, primary }: { query: string; label: string; p
       }}
       className={
         primary
-          ? "rounded-md bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/90"
+          ? "rounded-md bg-ink px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink/90"
           : "text-sm text-faint underline underline-offset-4 hover:text-ink"
       }
     >

@@ -204,7 +204,7 @@ function RideTheBus() {
               <button
                 key={o.m}
                 onClick={() => game.push(o.m)}
-                className={`min-w-24 rounded-md border-2 border-ink px-5 py-3 font-medium transition hover:bg-ink hover:text-paper ${
+                className={`min-w-24 rounded-md border-2 border-ink px-5 py-3 font-medium transition-colors hover:bg-ink hover:text-paper ${
                   "red" in o ? `text-2xl ${o.red ? "text-miss" : ""}` : ""
                 }`}
               >

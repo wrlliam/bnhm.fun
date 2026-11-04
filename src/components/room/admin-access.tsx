@@ -86,7 +86,7 @@ export function AdminLogin({ code, onDone }: { code: string; onDone?: () => void
         autoCapitalize="none"
         spellCheck={false}
         aria-label="Admin password"
-        className="w-52 rounded-md border-2 border-ink bg-paper px-3 py-2 font-mono tracking-wider outline-none"
+        className="w-52 rounded-md border-2 border-ink/25 transition-colors focus:border-ink bg-paper px-3 py-2 font-mono tracking-wider outline-none"
       />
       <button
         disabled={busy || !password.trim()}

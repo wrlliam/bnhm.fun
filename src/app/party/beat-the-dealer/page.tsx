@@ -169,7 +169,7 @@ function BeatTheDealer() {
                       key={rank}
                       onClick={() => game.push(CODES[i])}
                       disabled={g >= 4}
-                      className={`flex flex-col items-center rounded-md border-2 py-2 font-mono font-bold transition ${
+                      className={`flex flex-col items-center rounded-md border-2 py-2 font-mono font-bold transition-colors ${
                         ruledOut
                           ? "border-faint/30 text-faint/50"
                           : "border-ink hover:bg-ink hover:text-paper"

@@ -165,7 +165,7 @@ export function HangmanPlayer({ room, token, hostToken }: Props) {
                           key={l}
                           onClick={() => guess(l)}
                           disabled={!canGuess || used}
-                          className={`h-11 w-8 rounded-md border-2 font-mono font-bold transition sm:w-10 ${
+                          className={`h-11 w-8 rounded-md border-2 font-mono font-bold transition-colors sm:w-10 ${
                             used
                               ? miss
                                 ? "border-miss/30 text-miss/50 line-through"

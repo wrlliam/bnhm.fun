@@ -18,7 +18,7 @@ export function ReactionBar({ room }: { room: RoomView }) {
             await roomAction(room.code, { type: "react", emoji: e });
             setTimeout(() => setLast(null), 400);
           }}
-          className={`size-11 rounded-full bg-ink/5 text-2xl transition active:scale-90 ${last === e ? "scale-110 bg-hit/20" : "hover:bg-ink/10"}`}
+          className={`size-11 rounded-full bg-ink/5 text-2xl transition-[transform,background-color,border-color,color,opacity] active:scale-90 ${last === e ? "scale-110 bg-hit/20" : "hover:bg-ink/10"}`}
           aria-label={`React ${e}`}
         >
           {e}

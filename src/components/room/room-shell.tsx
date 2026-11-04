@@ -72,14 +72,14 @@ export function RoomShell({
         <button
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="rounded-md border-2 border-ink px-3 py-1.5 text-sm font-medium transition hover:bg-ink hover:text-paper"
+          className="rounded-md border-2 border-ink px-3 py-1.5 text-sm font-medium transition-colors hover:bg-ink hover:text-paper"
         >
           {open ? "Close" : "Menu"}
         </button>
       </header>
 
       {open && (
-        <div className="pop mt-4 space-y-6 rounded-xl border-2 border-ink bg-surface p-5">
+        <div className="pop mt-4 space-y-6 rounded-xl border border-ink/15 bg-surface p-5">
           <div>
             <h2 className="text-sm font-medium text-faint">Players ({room.players.length})</h2>
             <div className="mt-2">
@@ -182,7 +182,7 @@ export function BigButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) 
   return (
     <button
       {...props}
-      className={`rounded-md bg-ink px-6 py-3 font-medium text-paper transition hover:bg-ink/90 disabled:opacity-40 ${props.className ?? ""}`}
+      className={`rounded-md bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40 ${props.className ?? ""}`}
     />
   );
 }
