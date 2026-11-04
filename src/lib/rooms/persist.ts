@@ -42,11 +42,11 @@ export function redis(): Promise<Client | null> {
 /** Everything except live connection state (re-created on load). */
 const LIVE_ONLY = new Set(["conns", "polls", "listeners"]);
 
-function serialize(room: Room) {
+export function serialize(room: Room) {
   return JSON.stringify(Object.fromEntries(Object.entries(room).filter(([k]) => !LIVE_ONLY.has(k))));
 }
 
-function deserialize(json: string): Room {
+export function deserialize(json: string): Room {
   const data = JSON.parse(json) as Omit<Room, "conns" | "polls" | "listeners">;
   return { ...data, conns: new Map(), polls: new Map(), listeners: new Set() } as Room;
 }

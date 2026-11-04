@@ -23,11 +23,13 @@ Built with **Next.js 16**, **React 19**, **Tailwind CSS 4** and **Bun**. There's
 
 ## Highlights
 
-- **Room games with a TV screen:** Ring of Fire, Most Likely To and Hangman. Join with a code; open the TV / admin screen on a big display.
+- **7 room games with a TV screen:** Ring of Fire, Most Likely To, Never Have I Ever, Truth or Drink, Higher or Lower, Trivia and Hangman. Join with a code or a **QR code**; open the TV / admin screen on a big display.
+- **Party extras:** emoji reactions that float up on the TV, an end-of-game recap with awards, and an optional turn timer.
+- **Never lose your seat:** a 4-digit rejoin PIN gets you back in from a new phone, and the host can hand over host controls. Rooms survive restarts and redeploys with Redis.
 - **Your phone knows when you drink:** a full-screen alert with the reason, confirmed with *Done*. The next card waits until everyone has drunk.
 - **Ring of Fire extras:** mates that chain, a question master, Jack rules with phone votes to scrap them, and host toggles for individual cards (e.g. no King's cup).
 - **Admin from any device:** each room gets a secure admin password, so you can unlock host controls on a TV or a second phone.
-- **12 games in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
+- **16 game modes in total:** the room games, plus pass-the-phone card games (Higher or Lower, Ride the Bus, Pyramid, Beat the Dealer, Horse Race, and more) and a card dealer with private hand links.
 - **Rules for every game** at `/how-to-play`, linked from each game.
 - **Settings per device:** text size, keep screen awake, vibration, sounds, animations, and Drink/Forfeit wording for non-drinking groups.
 - **8 themes:** Notebook, Clean, Sunset, Candy, Night, Chalkboard, Ocean and Arcade, with live previews.
@@ -52,6 +54,8 @@ To test several players on one computer, use separate tabs: each tab keeps its o
 | `bun run build` | Production build (standalone output) |
 | `bun run start` | Serve the production build           |
 | `bun run lint`  | ESLint                               |
+| `bun run test`  | Unit tests (game rules, room core)   |
+| `bun run test:e2e` | Production build + Playwright end-to-end tests (two phones play a room; TV admin login) |
 
 ## Games
 
@@ -59,11 +63,15 @@ Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), 
 
 ### Room games: everyone on their own phone
 
-| Game               | Phones                                                                    | TV / admin panel                                                         |
-| ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **Ring of Fire**   | Draw on your turn, read the rule, pick who drinks / your mate / your rule | Big card + rule, whose turn, sips per player, mates, rules, event log    |
-| **Most Likely To** | Secret vote for a player                                                  | Card, who's voted, results bar chart                                     |
-| **Hangman**        | Picker types the word; others guess on a keyboard                         | Stickman, word, missed letters, scores                                   |
+| Game                  | Phones                                                                    | TV / admin panel                                                      |
+| --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Ring of Fire**      | Draw on your turn, read the rule, pick who drinks / your mate / your rule | Big card + rule, whose turn, sips per player, mates, rules, event log |
+| **Most Likely To**    | Secret vote for a player                                                  | Card, who's voted, results bar chart                                  |
+| **Never Have I Ever** | Secret "I have" / "Never"; the guilty are revealed together              | Prompt, who's answered, the guilty                                    |
+| **Truth or Drink**    | Your question pops up on your turn: answer, or drink 2 to dodge           | Whose turn, the question, the outcome                                 |
+| **Higher or Lower**   | Call higher / lower / equal on your turn; equal lets you hand out 3       | Big card, whose turn, streak, countdown                               |
+| **Trivia**            | Four coloured answers, 20 s, one go each                                  | Question, answers, countdown, live leaderboard                        |
+| **Hangman**           | Picker types the word; others guess on a keyboard                         | Stickman, word, missed letters, scores                                |
 
 **Flow:**
 
@@ -72,6 +80,15 @@ Every game has a rules page at `/how-to-play/<game>` (index at `/how-to-play`), 
 3. Others enter the code on the home page, or open `/r/CODE`.
 4. Press **Open TV / admin** to open a popup to drag onto a TV, or open `/tv/CODE` on any screen. Anyone can watch; controls appear only on admin devices.
 5. **Admin on another device:** creating a room also creates an **admin password** (e.g. `k7mp-3xq9-hr2w`). It's shown to the host in the lobby and under Menu. On a TV or second device, open `/tv`, enter the code and password (or use **Admin login** on `/tv/CODE`), and that device gets host controls. Case, spaces and dashes don't matter when typing it.
+
+**In every room:**
+
+- **QR code to join:** on the TV next to the room code, and in each phone's Menu.
+- **Rejoin PIN:** everyone has a 4-digit PIN in their Menu. On a new phone, open the room link, tap *Rejoin*, pick your name and enter the PIN. Five wrong tries lock that seat for a while.
+- **Host handover:** the host can tap *make host* on any player. Host rights follow that player, and the admin password rotates, so old admin screens drop off.
+- **Reactions:** an emoji bar at the bottom of every phone. Reactions float up on the TV with the sender's photo.
+- **Recap & stats:** Menu → *Game recap & stats* shows awards (Thirstiest, Stayed dry, Most picked on) and a sips table, with a *Share the results* button. The host can put the recap full-screen on the TV.
+- **Turn timer** (Ring of Fire, Higher or Lower): Off, 15, 30 or 60 s, set by the host. Running out skips the turn; it pauses while anyone is still drinking.
 
 **Drinking alerts:** when a game says someone drinks, that player's phone shows a full-screen **Drink!** with the reason, and vibrates where supported. It stays until they tap **Done — I drank**. The next card (Ring of Fire) or prompt (Most Likely To) is blocked on the server until every pending drink is confirmed. Everyone sees who they're waiting on, the host has a **Stop waiting** override, and players who leave are cleared automatically.
 
@@ -164,11 +181,11 @@ These wrap plain `docker compose` commands (see `package.json`).
 | File                      | Purpose                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------------- |
 | `Dockerfile`              | Multi-stage build: Bun installs dependencies, Node runs `next build` (Bun's build can segfault on some x86 hosts), then Next's standalone server runs on `node:22-alpine` as a non-root user. Tested on amd64 and arm64 |
-| `docker-compose.yml`      | `app` service (health check, log rotation, restart policy) plus an optional `tunnel` service (Cloudflare) |
+| `docker-compose.yml`      | `app` + `redis` services (health checks, log rotation, restart policy) plus an optional `tunnel` service (Cloudflare) |
 | `docker-compose.dev.yml`  | Hot-reload dev container                                                                     |
 | `docker/Caddyfile.example` | Site block to paste into **your own** Caddy. The live-update stream (`/api/rooms/*/stream`) is never buffered or compressed |
 | `docker/Dockerfile.dev`   | Dev image                                                                                    |
-| `.env.example`            | `PORT`, `BIND`, `NEXT_PUBLIC_SITE_URL`, `ALLOWED_DEV_ORIGINS`                                |
+| `.env.example`            | `PORT`, `BIND`, `NEXT_PUBLIC_SITE_URL`, `REDIS_URL`, `STATS_KEY`, `ALLOWED_DEV_ORIGINS`      |
 
 **Making it public: pick one**
 
@@ -183,6 +200,10 @@ These wrap plain `docker compose` commands (see `package.json`).
 3. Paste the site block from [`docker/Caddyfile.example`](docker/Caddyfile.example) into your Caddyfile. Change the domain, and the upstream if needed (`localhost:3000` for Caddy on the same host; the container name if Caddy is in Docker on a shared network). Then run `caddy reload`.
 
 The important part is `flush_interval -1` on `/api/rooms/*/stream`, which keeps live updates instant. Without it, phones still work but drop back to polling. Caddy already sends `X-Forwarded-For`, which the rate limits use to see real client IPs.
+
+**Persistent rooms (Redis):** `docker compose` runs `redis:7` alongside the app. Rooms are saved a moment after every change, loaded back on startup, and timers are re-armed, so a restart or redeploy doesn't end anyone's game. Data lives in the `redis_data` volume, capped at 256 MB. Set `REDIS_URL=` (empty) in `.env` to go back to memory-only. For `bun dev`, point `REDIS_URL` at any Redis.
+
+**Usage stats:** set `STATS_KEY` in `.env`, then open `/stats` and enter it. You'll see live rooms and players, today's and all-time counts (rooms created, players joined, games started, reactions), a 14-day chart and the most-played games. There are no cookies, no IPs and no player data: just counters, stored in Redis when available.
 
 **Health check:** `GET /api/health` returns `{ ok, rooms, uptime }`. Docker uses it to mark the container healthy, and the tunnel waits for it before starting.
 
@@ -203,7 +224,7 @@ The important part is `flush_interval -1` on `/api/rooms/*/stream`, which keeps 
 
 Security headers are set (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), and `X-Powered-By` is removed. Client IPs come from `CF-Connecting-IP` / `X-Forwarded-For`, so keep the app behind your proxy or the tunnel (with `BIND=127.0.0.1` when the proxy is on the same host) rather than exposing port 3000 directly.
 
-> **Run exactly one `app` container.** Rooms and live connections live in server memory, so extra replicas would split players across instances, and a restart clears open rooms. The pass-the-phone games are unaffected, because their state lives in the URL.
+> **Run exactly one `app` container.** Live connections are per process, so extra replicas would split players across instances. Rooms themselves are safe in Redis across restarts. The pass-the-phone games are unaffected, because their state lives in the URL.
 
 ## How it works
 
@@ -239,11 +260,16 @@ src/
 - **Privacy:** views are built per viewer, so the hangman word is only sent to the picker until the round ends.
 - **Party games** are fully client-side. A seeded shuffle plus the moves in the URL reproduce the whole game.
 
+### Tests
+
+- `tests/unit/` (`bun test`, about 0.2 s) covers the room core: joining, rejoin PIN lockout, admin password, host handover, drink confirmations, reactions, and a persistence round-trip. It also covers the game rules: disabled cards, turn order, chained mates, Guys/Girls auto-resolve, Jack rule votes, Higher or Lower streaks, Trivia scoring, Never Have I Ever reveals and Truth or Drink turns.
+- `tests/e2e/` (Playwright, mobile viewport) runs against the production standalone build. Two separate browser contexts join a Ring of Fire room and play, checking that drink alerts gate the next card. A third test unlocks TV admin controls with the password. If Playwright's browser isn't installed yet, run `bunx playwright install chromium` once.
+
 ### Adding a room game
 
-1. Write `src/lib/rooms/games/<name>.ts` that exports a `GameModule` (`init`, `act`, `view`, optional `onJoin` / `onLeave`). Call `addDrink()` to buzz someone's phone.
+1. Write `src/lib/rooms/games/<name>.ts` that exports a `GameModule` (`init`, `act`, `view`, optional `onJoin` / `onLeave` / `restore`). Call `addDrink()` to buzz someone's phone, `requireDrinksDone()` before moving on, and `schedule()` for timers.
 2. Register it in `src/lib/rooms/registry.ts` and add the kind to `GameKind` in `core.ts`.
-3. Add `src/games/<name>/player.tsx` and `tv.tsx`, and wire them into `app/r/[code]/room-client.tsx` and `app/tv/[code]/tv-client.tsx`.
+3. Add the phone and TV views under `src/games/<name>/` (shared pieces such as `GameLobby`, `Countdown` and `PlayerPicker` are in `components/room/game-bits.tsx`), and wire them into `app/r/[code]/room-client.tsx` and `app/tv/[code]/tv-client.tsx`.
 4. Add a guide to `src/lib/guides.ts` and a card to `ROOM_GAMES` on the home page.
 
 ### Adding a prompt game
@@ -252,7 +278,7 @@ Make `src/app/party/<name>/page.tsx` that renders `<PromptGame prompts={[...]} p
 
 ### Scaling beyond one server
 
-Rooms and their live connections live in one process. To run several instances, move room state into a shared store such as Redis and fan out change notifications through Redis pub/sub, so each instance can push to the streams it holds.
+Room state is already in Redis, but live connections live in one process. To run several instances, also fan out change notifications through Redis pub/sub (and route each room's writes through one place), so every instance can push to the streams it holds.
 
 ## Branding & SEO
 
