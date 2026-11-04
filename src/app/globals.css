@@ -62,25 +62,6 @@
   --bg-wide: var(--bg);
 }
 
-[data-theme="casino"] {
-  color-scheme: dark;
-  --paper: #0f4d31;
-  --surface: #0b3d27;
-  --ink: #f7ecd0;
-  --faint: #a9cbb5;
-  --rule: transparent;
-  --margin: transparent;
-  --miss: #ef6a5b;
-  --hit: #f2c14e;
-  --card-back: #8c1d2c;
-  --hand-font: var(--font-playfair);
-  --hand-adjust: 0.4;
-  --bg:
-    radial-gradient(ellipse at center, transparent 40%, rgb(0 0 0 / 0.45) 100%),
-    repeating-radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.015) 0 1px, transparent 1px 3px);
-  --bg-wide: var(--bg);
-}
-
 [data-theme="clean"] {
   color-scheme: light;
   --paper: #f6f7f9;
@@ -256,9 +237,6 @@ body {
 [data-theme="ocean"] .font-hand {
   text-shadow: 0 2px 20px rgb(63 227 208 / 0.25);
 }
-[data-theme="casino"] .font-hand {
-  text-shadow: 0 1px 0 rgb(0 0 0 / 0.4);
-}
 [data-theme="chalkboard"] .font-hand {
   text-shadow: 0 0 1px rgb(255 255 255 / 0.6);
   opacity: 0.95;
@@ -295,6 +273,22 @@ body {
 /* Candy: everything a little bouncier */
 [data-theme="candy"] button {
   transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Settings: text size and animations (see src/lib/settings.ts) */
+html[data-text="large"] {
+  font-size: 112.5%;
+}
+html[data-text="xl"] {
+  font-size: 125%;
+}
+
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

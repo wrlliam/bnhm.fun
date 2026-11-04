@@ -4,7 +4,6 @@ export const THEMES = [
   { id: "sunset", name: "Sunset", hint: "Warm peach and coral", dark: false },
   { id: "candy", name: "Candy", hint: "Pastel, soft and bouncy", dark: false },
   { id: "night", name: "Night", hint: "Neon party lights", dark: true },
-  { id: "casino", name: "Casino", hint: "Green felt and gold", dark: true },
   { id: "chalkboard", name: "Chalkboard", hint: "Chalk on a board", dark: true },
   { id: "ocean", name: "Ocean", hint: "Deep blue and teal", dark: true },
   { id: "arcade", name: "Arcade", hint: "Pixels and scanlines", dark: true },
