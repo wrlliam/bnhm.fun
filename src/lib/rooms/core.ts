@@ -361,7 +361,7 @@ export function addDrink(room: Room, playerId: string, amount: number, reason: s
   room.drinks.push({ id: ++room.seq, playerId, amount, reason, at: Date.now(), acked: false });
   const st = (room.stats[playerId] ??= { sips: 0, alerts: 0 });
   st.alerts++;
-  st.sips += amount === 0 ? 5 : amount; // a whole cup counts as 5
+  st.sips += amount;
   if (room.drinks.length > 200) {
     // trim old history, but never drop a drink someone still has to confirm
     const drop = room.drinks.length - 200;

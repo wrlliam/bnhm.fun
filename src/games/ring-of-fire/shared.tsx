@@ -227,11 +227,9 @@ function MiniPlayer({ room, id, big }: { room: RoomView; id: string; big: boolea
   );
 }
 
-/** Sips per player so far this game, from the drink log. */
+/** Sips per player so far this game, from the server's whole-game tallies (the drinks list is trimmed). */
 export function drinkTotals(room: RoomView) {
-  const totals = new Map<string, number>();
-  for (const d of room.drinks) totals.set(d.playerId, (totals.get(d.playerId) ?? 0) + Math.max(1, d.amount));
-  return totals;
+  return new Map(Object.entries(room.stats).map(([id, st]) => [id, st.sips]));
 }
 
 /** Host: pair players up as drinking partners (same effect as an 8 / Mate). Tap a face, tap their partner. */

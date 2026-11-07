@@ -49,7 +49,7 @@ export function Recap({ room, big = false }: { room: RoomView; big?: boolean }) 
           </li>
         ))}
       </ol>
-      <p className={`mt-3 text-faint ${big ? "text-base" : "text-xs"}`}>{total} sips in total · a whole King&rsquo;s cup counts as 5</p>
+      <p className={`mt-3 text-faint ${big ? "text-base" : "text-xs"}`}>{total} sips in total</p>
       {!big && (
         <button
           onClick={async () => {

@@ -131,6 +131,39 @@ describe("Ring of Fire", () => {
     expect(s.vote).toBeNull();
     expect(s.rules).toHaveLength(0);
   });
+
+  test("sip counts include mates, penalties, Guys/Girls and the King's cup", () => {
+    const { as, host, room, players, code, view } = setup("ring-of-fire", ["Ann", "Ben", "Cat"], ["girl", "guy", "girl"]);
+    const [ann, ben, cat] = players.map((p) => p.id);
+    host({ type: "start" });
+    const s = room.state as RofState;
+    host({ type: "addMate", a: ann, b: ben });
+    const sips = () => [ann, ben, cat].map((id) => room.stats[id]?.sips ?? 0);
+
+    host({ type: "penalty", playerId: ann }); // failed a challenge: Ann + her mate Ben
+    expect(sips()).toEqual([1, 1, 0]);
+    ackAll(code);
+
+    rigNext(s, "6"); // Girls: Ann, Cat, and Ben as Ann's mate
+    as(0, { type: "draw" });
+    expect(sips()).toEqual([2, 2, 1]);
+    ackAll(code);
+
+    s.kings = 3;
+    s.turn = 0;
+    rigNext(s, "K"); // fourth King: 3 sips, passed on to the mate
+    as(0, { type: "draw" });
+    expect(sips()).toEqual([5, 5, 1]);
+    ackAll(code);
+
+    // the counter survives the drinks list being trimmed in the view
+    for (let i = 0; i < 60; i++) host({ type: "penalty", playerId: cat });
+    expect(view().drinks.length).toBeLessThan(60);
+    expect(view().stats[cat].sips).toBe(61);
+
+    host({ type: "start" }); // new game starts the counter again
+    expect(room.stats).toEqual({});
+  });
 });
 
 describe("Higher or Lower", () => {

@@ -21,6 +21,9 @@ export const CHOICE: Record<Rank, null | { kind: "one" | "many" | "mate" | "rule
   K: null,
 };
 
+/** The King's cup holds the three earlier pours. */
+const KINGS_CUP_SIPS = 3;
+
 /** Cards that target everyone in a group, resolved automatically when everyone's group is known. */
 const GROUP_CARD: Partial<Record<Rank, "guy" | "girl">> = { "5": "guy", "6": "girl" };
 
@@ -264,7 +267,8 @@ function resolveAuto(room: R, card: Card, by: string) {
     case "K": {
       s.kings++;
       if (s.kings >= 4) {
-        drink(room, by, 0, "Fourth King — drink the King's cup!");
+        // three pours went in before this King, so the cup is 3 sips
+        drink(room, by, KINGS_CUP_SIPS, "Fourth King — drink the King's cup!");
         return `Fourth King! ${name} drinks the King's cup.`;
       }
       return `${name} pours into the King's cup. ${4 - s.kings} to go.`;
@@ -447,6 +451,7 @@ export const ringOfFire: GameModule<RofState> = {
           turnOrder: room.players.map((p) => p.id),
         });
         for (const d of room.drinks) d.acked = true; // fresh game, fresh slate
+        room.stats = {};
         log(room, `Game on! ${playerName(room, s.turnOrder[0])} draws first.`);
         armTurnTimer(room);
         return;
