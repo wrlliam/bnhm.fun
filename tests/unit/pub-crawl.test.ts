@@ -3,7 +3,7 @@ import { haversineKm, parseStops, routeKm } from "@/lib/pub-crawl";
 import { getRoom } from "@/lib/rooms/core";
 import type { PubState } from "@/lib/rooms/games/pub-crawl";
 import { getPhoto, serialize } from "@/lib/rooms/persist";
-import { create, photoFor } from "@/lib/rooms/server";
+import { create, perform, photoFor, viewFor } from "@/lib/rooms/server";
 import type { PubGameView } from "@/lib/rooms/registry";
 import { reset, setup } from "./helpers";
 
@@ -37,6 +37,32 @@ describe("Pub Crawl", () => {
     const { code } = create("pub-crawl", { stops: ["The Lamb", "  The Crown  ", "", "The Lamb"] });
     expect((getRoom(code).state as PubState).stops.map((x) => x.name)).toEqual(["The Lamb", "The Crown"]);
     expect(parseStops("A\n\n b \na\nC")).toEqual(["A", "b", "C"]);
+  });
+
+  test("stops picked from the map keep their pin, which places them before anyone checks in", () => {
+    const { code } = create("pub-crawl", {
+      stops: [
+        { name: "Princess Louise", lat: 51.5173, lng: -0.1216, address: "208 High Holborn, London" },
+        { name: "The Lamb" },
+        { name: "Bad pin", lat: 999, lng: 0 },
+      ],
+    });
+    const room = getRoom(code);
+    const stops = (room.state as PubState).stops;
+    expect(stops[0].pin).toEqual({ lat: 51.5173, lng: -0.1216 });
+    expect(stops[0].address).toBe("208 High Holborn, London");
+    expect(stops[1].pin).toBeNull();
+    expect(stops[2].pin).toBeNull();
+    const host = (b: Record<string, unknown>) => perform(code, { ...b, hostToken: room.hostToken });
+    host({ type: "pinStop", id: stops[1].id, lat: 51.5226, lng: -0.1186, address: "94 Lamb's Conduit St" });
+    host({ type: "addStop", name: "The Seven Stars", lat: 51.5155, lng: -0.1125 });
+    const g = viewFor(room, { player: null, isHost: false }).game as PubGameView;
+    expect(g.stops.map((x) => x.pinned)).toEqual([true, true, false, true]);
+    expect(g.stops[1].spot).toEqual({ lat: 51.5226, lng: -0.1186 });
+    expect(g.routeKm).toBeGreaterThan(0);
+    expect(() => host({ type: "pinStop", id: stops[1].id, name: "princess louise" })).toThrow("already on the list");
+    host({ type: "pinStop", id: stops[1].id, lat: null, lng: null });
+    expect((room.state as PubState).stops[1].pin).toBeNull();
   });
 
   test("can't start without stops; only the host edits the route", () => {

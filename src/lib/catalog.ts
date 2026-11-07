@@ -9,8 +9,8 @@ export type Suit = "♥" | "♦" | "♠" | "♣";
 export type GameOption =
   | { key: string; type: "choice"; label: string; hint?: string; choices: { value: string; label: string; hint?: string }[]; default: string }
   | { key: string; type: "toggle"; label: string; hint?: string; default: boolean }
-  /** One item per line (sent as a string array). */
-  | { key: string; type: "list"; label: string; hint?: string; placeholder?: string; default: string[] };
+  /** Places picked from a map search (sent as [{ name, lat, lng, address }]). */
+  | { key: string; type: "places"; label: string; hint?: string; default: [] };
 
 export type GameMeta = {
   kind: string;
@@ -209,10 +209,9 @@ export const GAMES_CATALOG: GameMeta[] = [
     options: [
       {
         key: "stops",
-        type: "list",
+        type: "places",
         label: "Stops",
-        hint: "One per line, in order. Add a street or town so map links find the right place",
-        placeholder: "The Red Lion, High St\nThe Crown\nThe Kings Arms",
+        hint: "Search for each pub in order. They're pinned on the map with the walking route between them",
         default: [],
       },
     ],

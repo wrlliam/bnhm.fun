@@ -334,12 +334,12 @@ export const GUIDES: Guide[] = [
     overview:
       "A pub crawl with a scoreboard. The host lists the stops, everyone joins on their phone and makes their own way round. Check in at each stop, post a photo of your empty glass, and count your drinks. At the end you get the finish order, roughly how far you walked, awards and every photo.",
     setup: [
-      "Start a Pub Crawl room and type the stops in order, one per line. Adding the street or town helps the Directions links find the right place.",
+      "Start a Pub Crawl room and search for each stop in order. Pick it from the suggestions and it's pinned on the map, with the walking route drawn between the stops.",
       "Share the code or QR. The host can add, rename, reorder or remove stops at any time from the lobby or the menu.",
       "Optional: open the TV screen on a laptop or a phone propped up at the first pub to show the live board.",
     ],
     howToPlay: [
-      "Your phone shows your next stop with a Directions link.",
+      "Your phone shows your next stop with walking directions, plus a map of the whole route (you can open it in Google Maps too).",
       "When you get there, tap “I'm here”. If you allow location, your phone's position is used to place the stop and work out the distance. Nobody sees where you are, only the stops.",
       "Finish your drink and tap “Snap your empty glass”. The photo ticks the stop off and moves you on. No photo? Tap “Move on without a photo”.",
       "Use the + and − buttons to count every drink at each stop.",

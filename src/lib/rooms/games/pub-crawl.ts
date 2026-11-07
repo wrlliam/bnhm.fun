@@ -9,7 +9,14 @@ import { deletePhoto, putPhoto } from "../persist";
  * and photos make up the results.
  */
 
-type Stop = { id: string; name: string };
+type Stop = {
+  id: string;
+  name: string;
+  /** Where the host pinned it on the map (from the place search). Rooms saved before pins existed have none. */
+  pin?: LatLng | null;
+  /** Street / town line from the place search, shown under the name. */
+  address?: string | null;
+};
 
 type Visit = {
   arrivedAt: number | null;
@@ -103,8 +110,30 @@ function median(xs: number[]) {
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
 }
 
-/** A stop's position: the middle of where everyone's phone was when they arrived. */
+/** Optional map pin sent with a stop: { lat, lng, address }. Null when absent or junk. */
+function cleanPin(a: Record<string, unknown>): LatLng | null {
+  if (a.lat === undefined || a.lat === null || a.lng === undefined || a.lng === null) return null;
+  const lat = Number(a.lat);
+  const lng = Number(a.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+}
+
+const cleanAddress = (x: unknown) => (typeof x === "string" && x.trim() ? x.replace(/\s+/g, " ").trim().slice(0, 120) : null);
+
+/** Build a stop from a setup-page entry: a plain name, or { name, lat, lng, address }. */
+function stopFrom(entry: unknown, id: string): Stop | null {
+  const obj = entry && typeof entry === "object" ? (entry as Record<string, unknown>) : { name: entry };
+  const name = String(obj.name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_STOP_NAME);
+  if (!name) return null;
+  const pin = cleanPin(obj);
+  return { id, name, pin, address: pin ? cleanAddress(obj.address) : null };
+}
+
+/** A stop's position: its map pin, else the middle of where everyone's phone was when they arrived. */
 function stopSpot(s: PubState, stopId: string): LatLng | null {
+  const pin = s.stops.find((x) => x.id === stopId)?.pin;
+  if (pin) return pin;
   const fixes = Object.values(s.visits)
     .map((v) => v[stopId]?.at)
     .filter((x): x is NonNullable<Visit["at"]> => !!x);
@@ -189,6 +218,8 @@ function view(room: R, viewer: Actor) {
     return {
       id: x.id,
       name: x.name,
+      address: x.address ?? null,
+      pinned: !!x.pin,
       spot: spots.get(x.id) ?? null,
       arrivals,
       firstAt: arrivals.length ? people.find((p) => p.playerId === arrivals[0])!.visits[x.id].arrivedAt : null,
@@ -247,8 +278,15 @@ export const pubCrawl: GameModule<PubState> = {
         requireHost(actor);
         if (!Array.isArray(a.stops)) return;
         if (s.status !== "lobby") throw new GameError("Edit stops one at a time once the crawl has started");
-        const names = [...new Set(a.stops.map((n) => String(n ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_STOP_NAME)).filter(Boolean))].slice(0, MAX_STOPS);
-        s.stops = names.map((name) => ({ id: `s${++s.stopSeq}`, name }));
+        const stops: Stop[] = [];
+        for (const entry of a.stops) {
+          const stop = stopFrom(entry, `s${s.stopSeq + 1}`);
+          if (!stop || stops.some((x) => x.name.toLowerCase() === stop.name.toLowerCase())) continue;
+          s.stopSeq++;
+          stops.push(stop);
+          if (stops.length >= MAX_STOPS) break;
+        }
+        s.stops = stops;
         return;
       }
       case "addStop": {
@@ -256,12 +294,26 @@ export const pubCrawl: GameModule<PubState> = {
         if (s.stops.length >= MAX_STOPS) throw new GameError(`That's ${MAX_STOPS} stops — plenty`);
         const name = cleanStopName(a.name);
         if (s.stops.some((x) => x.name.toLowerCase() === name.toLowerCase())) throw new GameError("That stop's already on the list");
-        s.stops.push({ id: `s${++s.stopSeq}`, name });
+        const pin = cleanPin(a);
+        s.stops.push({ id: `s${++s.stopSeq}`, name, pin, address: pin ? cleanAddress(a.address) : null });
         return;
       }
       case "renameStop": {
         requireHost(actor);
         findStop(s, a.id).name = cleanStopName(a.name);
+        return;
+      }
+      case "pinStop": {
+        // host picked a place on the map for this stop (lat/lng null takes the pin off); optionally renames it
+        requireHost(actor);
+        const stop = findStop(s, a.id);
+        if (a.name !== undefined) {
+          const name = cleanStopName(a.name);
+          if (s.stops.some((x) => x !== stop && x.name.toLowerCase() === name.toLowerCase())) throw new GameError("That stop's already on the list");
+          stop.name = name;
+        }
+        stop.pin = cleanPin(a);
+        stop.address = stop.pin ? cleanAddress(a.address) : null;
         return;
       }
       case "moveStop": {

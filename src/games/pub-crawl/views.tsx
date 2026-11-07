@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/room/avatar";
 import { GameLobby } from "@/components/room/game-bits";
 import { act, BigButton, RoomShell } from "@/components/room/room-shell";
-import { clockTime, formatDuration, formatKm, type LatLng, mapsLink, MAX_STOP_NAME, stepsFor } from "@/lib/pub-crawl";
-import { fileToPhoto, type RoomView, type StreamStatus } from "@/lib/rooms/client";
+import { StopListEditor, useSearchNear } from "@/components/map/places";
+import { type MapStop, RouteMap, useWalkingRoute } from "@/components/map/route-map";
+import { directionsLink, locate, type PlaceInput, routeLink, searchPlaces } from "@/lib/maps";
+import { clockTime, formatDuration, formatKm, type LatLng, stepsFor } from "@/lib/pub-crawl";
+import { fileToPhoto, roomAction, type RoomView, type StreamStatus } from "@/lib/rooms/client";
 import type { PubGameView } from "@/lib/rooms/registry";
 
 type Props = { room: RoomView; token: string; hostToken: string | null; status: StreamStatus };
@@ -17,18 +20,6 @@ const playerOf = (room: RoomView, id: string) => room.players.find((p) => p.id =
 const nameOf = (room: RoomView, id: string) => (id === room.me ? "You" : (playerOf(room, id)?.name ?? "Someone"));
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] ?? "th"}`;
-
-/** The phone's position, or null if it's unavailable or the player says no. Never blocks for long. */
-function locate(): Promise<{ lat: number; lng: number; acc: number } | null> {
-  return new Promise((resolve) => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
-      () => resolve(null),
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
-    );
-  });
-}
 
 // ---- phone ------------------------------------------------------------------
 
@@ -84,6 +75,7 @@ function Crawling({ room, token, hostToken }: { room: RoomView; token: string; h
       ) : (
         <Finished room={room} person={me} />
       )}
+      <CrawlMap room={room} person={me} />
       <MyStops room={room} token={token} person={me} />
       <WhereIsEveryone room={room} />
       <LatestPhotos room={room} />
@@ -143,7 +135,7 @@ function CurrentStop({ room, token, stop, index, person }: { room: RoomView; tok
           {v.arrivedAt && <> · here since {clockTime(v.arrivedAt)}</>}
         </p>
         <h2 className="font-hand text-6xl font-bold leading-none">{stop.name}</h2>
-        <a href={mapsLink(stop.name)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm underline underline-offset-4">
+        <a href={directionsLink(stop.name, stop.spot)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm underline underline-offset-4">
           Directions
         </a>
         {others.length > 0 && (
@@ -333,6 +325,9 @@ function StopList({ room }: { room: RoomView }) {
           </li>
         ))}
       </ol>
+      <div className="mt-6">
+        <CrawlMap room={room} />
+      </div>
     </section>
   );
 }
@@ -432,89 +427,98 @@ function Photo({ room, shot, big = false, hostToken }: { room: RoomView; shot: S
 
 export function StopsEditor({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
   const g = pub(room);
-  const [name, setName] = useState("");
-  const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
+  const lastPin = [...g.stops].reverse().find((x) => x.pinned)?.spot ?? null;
+  const { near, wantNear } = useSearchNear(lastPin);
+  const tried = useRef(new Set<string>());
+  const unpinned = room.isHost ? g.stops.filter((x) => !x.pinned).map((x) => x.id).join(",") : "";
+
+  // stops added by name only (or from before pins existed) get the best match near the others
+  useEffect(() => {
+    if (!unpinned) return;
+    const todo = g.stops.filter((x) => !x.pinned && !tried.current.has(x.id));
+    for (const x of todo) tried.current.add(x.id);
+    void (async () => {
+      for (const x of todo) {
+        const [best] = await searchPlaces(x.name, lastPin).catch(() => []);
+        if (best) await roomAction(room.code, { type: "pinStop", hostToken: hostToken ?? undefined, id: x.id, lat: best.lat, lng: best.lng, address: best.address });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per newly unpinned stop
+  }, [unpinned]);
+
   if (!room.isHost) return null;
   const send = (body: Record<string, unknown>) => act(room, null, hostToken, body);
+  const place = (p: PlaceInput) => ({ name: p.name, lat: p.lat ?? null, lng: p.lng ?? null, address: p.address ?? null });
 
   return (
-    <div className="space-y-3 text-left">
+    <div className="space-y-2">
       <p className="text-sm font-medium">Stops {g.stops.length > 0 && <span className="text-faint">({g.stops.length})</span>}</p>
-      {g.stops.length > 0 && (
-        <ol className="divide-y divide-ink/10 rounded-xl border border-ink/15">
-          {g.stops.map((x, i) => (
-            <li key={x.id} className="flex items-center gap-2 px-3 py-2">
-              <span className="w-5 font-mono text-xs text-faint">{i + 1}</span>
-              {editing === x.id ? (
-                <form
-                  className="flex min-w-0 flex-1 gap-2"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (await send({ type: "renameStop", id: x.id, name: draft })) setEditing(null);
-                  }}
-                >
-                  <input
-                    autoFocus
-                    value={draft}
-                    maxLength={MAX_STOP_NAME}
-                    onChange={(e) => setDraft(e.target.value)}
-                    className="min-w-0 flex-1 border-b border-ink bg-transparent outline-none"
-                  />
-                  <button className="text-sm font-medium">Save</button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => {
-                    setEditing(x.id);
-                    setDraft(x.name);
-                  }}
-                  className="min-w-0 flex-1 truncate text-left"
-                  title="Rename"
-                >
-                  {x.name}
-                </button>
-              )}
-              <button onClick={() => send({ type: "moveStop", id: x.id, dir: -1 })} disabled={i === 0} aria-label={`Move ${x.name} up`} className="px-1 text-faint disabled:opacity-20">
-                ↑
-              </button>
-              <button
-                onClick={() => send({ type: "moveStop", id: x.id, dir: 1 })}
-                disabled={i === g.stops.length - 1}
-                aria-label={`Move ${x.name} down`}
-                className="px-1 text-faint disabled:opacity-20"
-              >
-                ↓
-              </button>
-              <button
-                onClick={() => (g.status === "lobby" || confirm(`Remove ${x.name}? Check-ins and photos there go too.`)) && send({ type: "removeStop", id: x.id })}
-                aria-label={`Remove ${x.name}`}
-                className="px-1 text-miss"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
-      <form
-        className="flex gap-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!name.trim()) return;
-          if (await send({ type: "addStop", name })) setName("");
+      <StopListEditor
+        stops={g.stops.map((x) => ({ key: x.id, name: x.name, address: x.address, pinned: x.pinned }))}
+        near={near}
+        onFocusNear={wantNear}
+        onAdd={(p) => send({ type: "addStop", ...place(p) })}
+        onReplace={(id, p) => send({ type: "pinStop", id, ...place(p) })}
+        onMove={(id, dir) => void send({ type: "moveStop", id, dir })}
+        onRemove={(id) => {
+          const x = g.stops.find((s) => s.id === id);
+          if (g.status === "lobby" || confirm(`Remove ${x?.name ?? "this stop"}? Check-ins and photos there go too.`)) void send({ type: "removeStop", id });
         }}
-      >
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={MAX_STOP_NAME}
-          placeholder={g.stops.length ? "Add another stop" : "First stop, e.g. The Red Lion"}
-          className="min-w-0 flex-1 rounded-md border border-ink/20 bg-paper px-3 py-2 outline-none focus:border-ink"
-        />
-        <button className="rounded-md bg-ink px-4 font-medium text-paper">Add</button>
-      </form>
+      />
+      {g.status === "lobby" && <CrawlMap room={room} />}
     </div>
+  );
+}
+
+/** Pins for the map: coloured by how this person's doing, when there is one. */
+function mapStops(g: PubGameView, person?: Person | null): MapStop[] {
+  return g.stops.map((x, i) => {
+    const v = person?.visits[x.id];
+    return {
+      key: x.id,
+      n: i + 1,
+      name: x.name,
+      spot: x.spot,
+      state: !person ? "todo" : v?.skipped ? "skipped" : v?.doneAt ? "done" : person.currentStop === x.id ? "current" : "todo",
+    };
+  });
+}
+
+/** The route on a real map, with the walking distance and a link to open it in Google Maps. */
+function CrawlMap({ room, person, big = false }: { room: RoomView; person?: Person | null; big?: boolean }) {
+  const g = pub(room);
+  const stops = mapStops(g, person);
+  const spots = stops.map((x) => x.spot).filter((p): p is LatLng => !!p);
+  const route = useWalkingRoute(spots);
+  const link = routeLink(spots);
+  if (!spots.length) return null;
+  return (
+    <section>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className={`font-medium text-faint ${big ? "text-2xl" : "text-sm"}`}>The route</h3>
+        <p className={`text-faint ${big ? "text-xl" : "text-xs"}`}>
+          {route && (
+            <>
+              {formatKm(route.km)} walk · about {route.minutes} min on foot
+            </>
+          )}
+          {route && link && !big && " · "}
+          {link && !big && (
+            <a href={link} target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">
+              Open in Google Maps
+            </a>
+          )}
+        </p>
+      </div>
+      <div className="mt-2">
+        <RouteMap stops={stops} className={big ? "h-[55vh]" : "h-64"} labels={big} />
+      </div>
+      {spots.length < g.stops.length && (
+        <p className={`mt-1 text-faint ${big ? "text-lg" : "text-xs"}`}>
+          {g.stops.length - spots.length} {g.stops.length - spots.length === 1 ? "stop isn't" : "stops aren't"} on the map yet
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -527,10 +531,12 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
   const finishers = ranked.filter((p) => p.complete);
   const duration = g.startedAt && g.endedAt ? g.endedAt - g.startedAt : null;
   const shots = allPhotos(g).reverse();
+  const route = useWalkingRoute(g.stops.map((x) => x.spot).filter((p): p is LatLng => !!p));
+  const km = route?.km ?? g.routeKm;
 
   const stats = [
     { label: g.stops.length === 1 ? "stop" : "stops", value: String(g.stops.length) },
-    { label: "walked, roughly", value: g.routeKm > 0 ? formatKm(g.routeKm) : "—" },
+    { label: route ? "walk between stops" : "walked, roughly", value: km > 0 ? formatKm(km) : "—" },
     { label: g.totalDrinks === 1 ? "drink" : "drinks", value: String(g.totalDrinks) },
     { label: g.totalPhotos === 1 ? "empty glass" : "empty glasses", value: String(g.totalPhotos) },
     ...(duration ? [{ label: "out", value: formatDuration(duration) }] : []),
@@ -548,9 +554,9 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
             </div>
           ))}
         </dl>
-        {g.routeKm > 0 && (
+        {km > 0 && (
           <p className={`mt-2 text-faint ${big ? "text-lg" : "text-xs"}`}>
-            About {stepsFor(g.routeKm).toLocaleString()} steps between the stops, measured from where phones checked in.
+            About {stepsFor(km).toLocaleString()} steps{route ? " along the walking route between the stops" : " between the stops, measured from where phones checked in"}.
           </p>
         )}
       </header>
@@ -582,7 +588,7 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
 
       <Awards room={room} ranked={ranked} big={big} />
 
-      <RouteMap stops={g.stops} big={big} />
+      <CrawlMap room={room} big={big} />
 
       <section>
         <h3 className={`font-medium text-faint ${big ? "text-2xl" : "text-sm"}`}>Everyone</h3>
@@ -748,46 +754,6 @@ function Slideshow({ room, shots, big }: { room: RoomView; shots: Shot[]; big: b
   );
 }
 
-/** The route as a simple line drawing, from the stops' check-in positions. */
-function RouteMap({ stops, big }: { stops: StopV[]; big: boolean }) {
-  const pts = stops.map((x, i) => ({ n: i + 1, name: x.name, spot: x.spot })).filter((x): x is { n: number; name: string; spot: LatLng } => !!x.spot);
-  if (pts.length < 2) return null;
-  const lat0 = pts.reduce((n, p) => n + p.spot.lat, 0) / pts.length;
-  const k = Math.cos((lat0 * Math.PI) / 180);
-  const raw = pts.map((p) => ({ ...p, x: p.spot.lng * k, y: -p.spot.lat }));
-  const xs = raw.map((p) => p.x);
-  const ys = raw.map((p) => p.y);
-  const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const W = 600;
-  const H = 320;
-  const pad = 40;
-  const span = Math.max(maxX - minX, (maxY - minY) * (W / H), 1e-6);
-  const scale = (W - pad * 2) / span;
-  const offX = (W - (maxX - minX) * scale) / 2;
-  const offY = (H - (maxY - minY) * scale) / 2;
-  const at = raw.map((p) => ({ ...p, px: offX + (p.x - minX) * scale, py: offY + (p.y - minY) * scale }));
-  return (
-    <section>
-      <h3 className={`font-medium text-faint ${big ? "text-2xl" : "text-sm"}`}>The route</h3>
-      <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full rounded-2xl bg-ink/5" role="img" aria-label={`Route through ${at.map((p) => p.name).join(", ")}`}>
-        <polyline points={at.map((p) => `${p.px},${p.py}`).join(" ")} fill="none" stroke="var(--hit)" strokeWidth={3} strokeDasharray="8 6" strokeLinecap="round" />
-        {at.map((p) => (
-          <g key={p.n}>
-            <circle cx={p.px} cy={p.py} r={13} fill="var(--ink)" />
-            <text x={p.px} y={p.py + 4.5} textAnchor="middle" fontSize={13} fontWeight={700} fill="var(--paper)">
-              {p.n}
-            </text>
-            {/* labels on the right half go to the left of their pin, so they never run off the edge */}
-            <text x={p.px > W / 2 ? p.px - 18 : p.px + 18} y={p.py + 5} textAnchor={p.px > W / 2 ? "end" : "start"} fontSize={14} fill="var(--ink)">
-              {p.name.length > 22 ? `${p.name.slice(0, 21)}…` : p.name}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </section>
-  );
-}
-
 // ---- TV ---------------------------------------------------------------------------
 
 export function PubTv({ room, hostToken }: { room: RoomView; hostToken: string | null }) {
@@ -823,6 +789,9 @@ export function PubTv({ room, hostToken }: { room: RoomView; hostToken: string |
             <p className="mt-3 text-2xl text-faint">No stops yet</p>
           )}
         </div>
+        <div className="lg:col-span-2">
+          <CrawlMap room={room} big />
+        </div>
       </div>
     );
   }
@@ -833,11 +802,11 @@ export function PubTv({ room, hostToken }: { room: RoomView; hostToken: string |
           <h2 className="font-hand text-8xl font-bold leading-none">Pub Crawl</h2>
           <p className="text-2xl text-faint">
             {plural(g.totalDrinks, "drink")} · {plural(g.totalPhotos, "empty glass", "empty glasses")}
-            {g.routeKm > 0 && ` · ${formatKm(g.routeKm)}`}
             {g.startedAt && <Elapsed since={g.startedAt} />}
           </p>
         </div>
         <WhereIsEveryone room={room} big />
+        <CrawlMap room={room} big />
         {room.isHost && (
           <BigButton className="px-8 py-3 text-lg" onClick={() => confirm("End the crawl and show the results?") && act(room, null, hostToken, { type: "end" })}>
             End the crawl and show results
