@@ -26,9 +26,9 @@ export function PlacesOption({ label, hint, onChange }: { label: string; hint?: 
     <div>
       <p className="font-medium">{label}</p>
       {hint && <p className="text-sm text-faint">{hint}</p>}
-      <div className="mt-3 grid gap-4 md:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <StopListEditor
-          stops={items.map((x) => ({ key: x.key, name: x.name, address: x.address ?? null, pinned: !!spotOf(x) }))}
+          stops={items.map((x) => ({ key: x.key, name: x.name, address: x.address ?? null, pinned: !!spotOf(x), spot: spotOf(x) }))}
           near={near}
           onFocusNear={wantNear}
           onAdd={(p) => {

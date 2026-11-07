@@ -4,9 +4,10 @@
  * - OSRM foot routing (routing.openstreetmap.de, the server openstreetmap.org uses): walking routes.
  * - OpenStreetMap's standard tiles for the map itself (fine for light use, with attribution).
  */
-import type { LatLng } from "./pub-crawl";
+import { haversineKm, type LatLng } from "./pub-crawl";
 
-export type Place = { name: string; address: string | null; lat: number; lng: number };
+/** `kind` is the OpenStreetMap type, e.g. "pub", "bar", "restaurant". */
+export type Place = { name: string; address: string | null; lat: number; lng: number; kind: string | null };
 /** A stop as typed: a picked place, or just a name. */
 export type PlaceInput = { name: string; address?: string | null; lat?: number | null; lng?: number | null };
 
@@ -24,30 +25,92 @@ function describe(p: PhotonFeature["properties"]) {
   return [...new Set(parts.filter(Boolean))].join(", ") || null;
 }
 
-/** Up to 6 matching places, nearest-first around `near` when given. */
+/** Places people drink in, searched first so "lamb" finds The Lamb before Lamb Street. */
+const VENUE_TAGS = ["amenity:pub", "amenity:bar", "amenity:biergarten", "amenity:nightclub"];
+export const isVenue = (kind: string | null) => !!kind && ["pub", "bar", "biergarten", "nightclub"].includes(kind);
+
+async function photon(params: URLSearchParams, signal?: AbortSignal): Promise<Place[]> {
+  const res = await fetch(`https://photon.komoot.io/api/?${params}`, { signal });
+  if (!res.ok) throw new Error("Place search isn't working right now");
+  const data = (await res.json()) as { features?: PhotonFeature[] };
+  return (data.features ?? []).map((f) => ({
+    name: (f.properties.name ?? [f.properties.housenumber, f.properties.street].filter(Boolean).join(" ")) || "Unnamed place",
+    address: describe(f.properties),
+    lat: f.geometry.coordinates[1],
+    lng: f.geometry.coordinates[0],
+    kind: f.properties.osm_value ?? null,
+  }));
+}
+
+function dedupe(places: Place[]) {
+  const seen = new Set<string>();
+  return places.filter((p) => {
+    const k = `${p.name.toLowerCase()}|${p.lat.toFixed(4)},${p.lng.toFixed(4)}`;
+    return !seen.has(k) && !!seen.add(k);
+  });
+}
+
+/** Up to 7 matches: pubs and bars first, then anything else (streets, towns, other venues). */
 export async function searchPlaces(q: string, near?: LatLng | null, signal?: AbortSignal): Promise<Place[]> {
   const query = q.trim();
   if (query.length < 2) return [];
-  const params = new URLSearchParams({ q: query, limit: "6", lang: "en" });
-  if (near) {
-    params.set("lat", String(near.lat));
-    params.set("lon", String(near.lng));
+  const base = () => {
+    const p = new URLSearchParams({ q: query, lang: "en" });
+    if (near) {
+      p.set("lat", String(near.lat));
+      p.set("lon", String(near.lng));
+    }
+    return p;
+  };
+  const venues = base();
+  venues.set("limit", "5");
+  for (const t of VENUE_TAGS) venues.append("osm_tag", t);
+  const any = base();
+  any.set("limit", "6");
+  const [a, b] = await Promise.all([photon(venues, signal).catch(() => []), photon(any, signal)]);
+  return dedupe([...a, ...b]).slice(0, 7);
+}
+
+const nearbyCache = new Map<string, Promise<Place[]>>();
+
+/**
+ * Pubs and bars within about 800 m of a point, nearest first. Photon only searches by text,
+ * so this asks for a few words most pub names contain and keeps what's close.
+ */
+export function nearbyPubs(at: LatLng): Promise<Place[]> {
+  const key = `${at.lat.toFixed(3)},${at.lng.toFixed(3)}`;
+  let hit = nearbyCache.get(key);
+  if (!hit) {
+    const dLat = 0.0072;
+    const dLng = dLat / Math.cos((at.lat * Math.PI) / 180);
+    const bbox = [at.lng - dLng, at.lat - dLat, at.lng + dLng, at.lat + dLat].map((n) => n.toFixed(5)).join(",");
+    hit = Promise.all(
+      ["the", "pub", "arms", "bar"].map((q) => {
+        const p = new URLSearchParams({ q, lang: "en", limit: "15", bbox });
+        for (const t of VENUE_TAGS) p.append("osm_tag", t);
+        return photon(p).catch(() => []);
+      }),
+    ).then((lists) =>
+      dedupe(lists.flat())
+        .filter((p) => p.name !== "Unnamed place")
+        .sort((a, b) => haversineKm(at, a) - haversineKm(at, b))
+        .slice(0, 8),
+    );
+    nearbyCache.set(key, hit);
+    void hit.then((r) => r.length || nearbyCache.delete(key));
   }
-  const res = await fetch(`https://photon.komoot.io/api/?${params}`, { signal });
-  if (!res.ok) throw new Error("Place search is unavailable right now");
-  const data = (await res.json()) as { features?: PhotonFeature[] };
-  const seen = new Set<string>();
-  return (data.features ?? [])
-    .map((f) => ({
-      name: (f.properties.name ?? [f.properties.housenumber, f.properties.street].filter(Boolean).join(" ")) || query,
-      address: describe(f.properties),
-      lat: f.geometry.coordinates[1],
-      lng: f.geometry.coordinates[0],
-    }))
-    .filter((p) => {
-      const k = `${p.name}|${p.address}`;
-      return !seen.has(k) && !!seen.add(k);
-    });
+  return hit;
+}
+
+/** "350 m" or "1.2 km" between two points, as the crow flies. */
+export function distanceLabel(a: LatLng, b: LatLng) {
+  const km = haversineKm(a, b);
+  return km < 1 ? `${Math.max(10, Math.round((km * 1000) / 10) * 10)} m` : `${km.toFixed(1)} km`;
+}
+
+/** Rough walking minutes between two stops (streets add ~30%, 5 km/h). */
+export function walkMinutes(a: LatLng, b: LatLng) {
+  return Math.max(1, Math.round(((haversineKm(a, b) * 1.3) / 5) * 60));
 }
 
 export type WalkingRoute = { km: number; minutes: number; line: [number, number][] };

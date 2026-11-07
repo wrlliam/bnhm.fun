@@ -1,4 +1,8 @@
+"use client";
+
+import { SeasonHat } from "@/components/seasonal";
 import type { PublicPlayer } from "@/lib/rooms/core";
+import { useSeason } from "@/lib/settings";
 
 const COLORS = ["#c2412d", "#2f7d4f", "#1f2a44", "#b7791f", "#6b46c1", "#0f766e", "#be185d", "#2563eb"];
 
@@ -8,7 +12,20 @@ function colorFor(id: string) {
   return COLORS[Math.abs(h) % COLORS.length];
 }
 
-export function Avatar({
+/** A player's photo or initial. In season it wears a hat (see components/seasonal.tsx). */
+export function Avatar(props: Parameters<typeof Face>[0]) {
+  const season = useSeason();
+  const size = props.size ?? 40;
+  if (!season || size < 34) return <Face {...props} />;
+  return (
+    <span className="relative inline-flex shrink-0">
+      <Face {...props} />
+      <SeasonHat season={season} size={size} />
+    </span>
+  );
+}
+
+function Face({
   player,
   size = 40,
   ring,

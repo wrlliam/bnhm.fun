@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { playSound } from "@/lib/feedback";
-import { type Settings, updateSettings, useSettings } from "@/lib/settings";
+import { seasonAvailable, type Settings, updateSettings, useSettings } from "@/lib/settings";
 import { THEME_KEY, THEMES, type ThemeId } from "@/lib/themes";
 
 function subscribeTheme(cb: () => void) {
@@ -27,6 +27,8 @@ export function SettingsPanel() {
   const [open, setOpen] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const settings = useSettings();
+  // only read inside the open panel, which never renders on the server
+  const season = open ? seasonAvailable() : null;
   const theme = useSyncExternalStore(
     subscribeTheme,
     () => document.documentElement.dataset.theme ?? "notebook",
@@ -131,6 +133,18 @@ export function SettingsPanel() {
               hint="Card flips, pop-ins and shakes"
               checked={settings.motion}
               onChange={(motion) => set({ motion })}
+            />
+            <Toggle
+              label="Seasonal effects"
+              hint={
+                season === "christmas"
+                  ? "Snow and Santa hats for December"
+                  : season === "halloween"
+                    ? "Cobwebs, bats and witch hats for Halloween week"
+                    : "Snow in December and spooky bits the week of Halloween"
+              }
+              checked={settings.seasonal}
+              onChange={(seasonal) => set({ seasonal })}
             />
           </Section>
         </div>

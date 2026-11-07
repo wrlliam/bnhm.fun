@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/room/avatar";
 import { GameLobby } from "@/components/room/game-bits";
 import { act, BigButton, RoomShell } from "@/components/room/room-shell";
+import { CameraIcon, CloseIcon, DirectionsIcon, ExternalIcon, PinIcon } from "@/components/icons";
 import { StopListEditor, useSearchNear } from "@/components/map/places";
+import { type PinState, StopPin } from "@/components/map/stop-pin";
 import { type MapStop, RouteMap, useWalkingRoute } from "@/components/map/route-map";
 import { directionsLink, locate, type PlaceInput, routeLink, searchPlaces } from "@/lib/maps";
 import { clockTime, formatDuration, formatKm, type LatLng, stepsFor } from "@/lib/pub-crawl";
@@ -22,6 +24,10 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] ?? "th"}`;
 
 // ---- phone ------------------------------------------------------------------
+
+function pinState(v: Person["visits"][string] | undefined, current: boolean): PinState {
+  return v?.skipped ? "skipped" : v?.doneAt ? "done" : current ? "current" : "todo";
+}
 
 export function PubPlayer({ room, token, hostToken, status }: Props) {
   const g = pub(room);
@@ -130,14 +136,24 @@ function CurrentStop({ room, token, stop, index, person }: { room: RoomView; tok
   return (
     <section className="pop space-y-5">
       <div>
-        <p className="text-sm text-faint">
+        <p className="flex items-center gap-2 text-sm text-faint">
+          <StopPin n={index + 1} state="current" size={22} />
           Stop {index + 1} of {g.stops.length}
           {v.arrivedAt && <> · here since {clockTime(v.arrivedAt)}</>}
         </p>
-        <h2 className="font-hand text-6xl font-bold leading-none">{stop.name}</h2>
-        <a href={directionsLink(stop.name, stop.spot)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm underline underline-offset-4">
-          Directions
-        </a>
+        <h2 className="mt-3 font-hand text-6xl font-bold leading-none">{stop.name}</h2>
+        {stop.address && <p className="mt-2 text-sm text-faint">{stop.address}</p>}
+        {!v.arrivedAt && (
+          <a
+            href={directionsLink(stop.name, stop.spot)}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg border border-ink/15 bg-surface px-4 text-sm font-medium transition-colors hover:border-ink/40"
+          >
+            <DirectionsIcon />
+            Walking directions
+          </a>
+        )}
         {others.length > 0 && (
           <div className="mt-3 flex items-center gap-2 text-sm text-faint">
             <span className="flex -space-x-2">
@@ -154,7 +170,7 @@ function CurrentStop({ room, token, stop, index, person }: { room: RoomView; tok
       {!v.arrivedAt ? (
         <div className="space-y-3">
           <BigButton
-            className="w-full py-5 text-xl"
+            className="flex w-full items-center justify-center gap-2 py-5 text-xl"
             disabled={!!busy}
             onClick={async () => {
               setBusy("arrive");
@@ -163,9 +179,10 @@ function CurrentStop({ room, token, stop, index, person }: { room: RoomView; tok
               setBusy(null);
             }}
           >
-            {busy === "arrive" ? "Checking in…" : "I'm here"}
+            <PinIcon size={20} />
+            {busy === "arrive" ? "Checking in" : "I'm here"}
           </BigButton>
-          <p className="text-xs text-faint">Your phone may ask for your location. It&rsquo;s only used to work out the distance you walked.</p>
+          <p className="text-xs text-faint">Your phone may ask for your location. It&rsquo;s only used to work out the distance walked, and nobody else sees it.</p>
           <button
             disabled={!!busy}
             onClick={() => confirm(`Skip ${stop.name}?`) && run("skip", { type: "skip" })}
@@ -176,8 +193,9 @@ function CurrentStop({ room, token, stop, index, person }: { room: RoomView; tok
         </div>
       ) : (
         <div className="space-y-3">
-          <BigButton className="w-full py-5 text-xl" disabled={!!busy} onClick={() => file.current?.click()}>
-            {busy === "proof" ? "Sending…" : "Snap your empty glass"}
+          <BigButton className="flex w-full items-center justify-center gap-2 py-5 text-xl" disabled={!!busy} onClick={() => file.current?.click()}>
+            <CameraIcon size={20} />
+            {busy === "proof" ? "Sending" : "Snap your empty glass"}
           </BigButton>
           <input
             ref={file}
@@ -221,7 +239,7 @@ function DrinkCounter({ room, token, stop, person }: { room: RoomView; token: st
   const here = person.visits[stop.id].drinks;
   const bump = (delta: number) => act(room, token, null, { type: "drink", stopId: stop.id, delta });
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-ink/15 bg-surface p-4">
+    <div className="flex items-center gap-4 rounded-2xl border border-ink/10 bg-surface p-4">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">Drinks here</p>
         <p className="text-xs text-faint">{plural(person.drinks, "drink")} tonight</p>
@@ -230,14 +248,14 @@ function DrinkCounter({ room, token, stop, person }: { room: RoomView; token: st
         onClick={() => bump(-1)}
         disabled={here === 0}
         aria-label="One fewer drink"
-        className="size-12 rounded-full border-2 border-ink text-2xl font-bold leading-none disabled:opacity-30"
+        className="size-12 rounded-full border border-ink/30 text-2xl leading-none transition-colors hover:border-ink disabled:opacity-30"
       >
         −
       </button>
-      <span className="w-10 text-center font-mono text-3xl font-bold tabular-nums" aria-live="polite">
+      <span className="w-10 text-center font-mono text-3xl font-medium tabular-nums" aria-live="polite">
         {here}
       </span>
-      <button onClick={() => bump(1)} aria-label="One more drink" className="size-12 rounded-full bg-ink text-2xl font-bold leading-none text-paper">
+      <button onClick={() => bump(1)} aria-label="One more drink" className="size-12 rounded-full bg-ink text-2xl leading-none text-paper transition-opacity hover:opacity-90 active:scale-[0.97]">
         +
       </button>
     </div>
@@ -250,7 +268,7 @@ function Finished({ room, person }: { room: RoomView; person: Person }) {
   const left = g.people.filter((p) => p.done < g.stops.length).length;
   return (
     <section className="pop rounded-2xl bg-hit/10 p-5">
-      <h2 className="font-hand text-5xl font-bold">{person.complete ? (place === 1 ? "First to finish!" : `Done — ${ordinal(place)} to finish`) : "That's your lot"}</h2>
+      <h2 className="font-hand text-5xl font-bold">{person.complete ? (place === 1 ? "First to finish" : `${ordinal(place)} to finish`) : "That's your lot"}</h2>
       <p className="mt-1">
         {person.finishedAt && g.startedAt && <>Every stop in {formatDuration(person.finishedAt - g.startedAt)}. </>}
         {plural(person.drinks, "drink")}, {plural(person.photos, "photo")}
@@ -269,19 +287,13 @@ function MyStops({ room, token, person }: { room: RoomView; token: string; perso
   return (
     <section>
       <h3 className="text-sm font-medium text-faint">Your night</h3>
-      <ol className="mt-2 divide-y divide-ink/10">
+      <ol className="mt-2 divide-y divide-ink/8">
         {g.stops.map((x, i) => {
           const v = person.visits[x.id];
           const current = person.currentStop === x.id;
           return (
-            <li key={x.id} className="flex items-center gap-3 py-2.5">
-              <span
-                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                  v.skipped ? "bg-ink/10 text-faint" : v.doneAt ? "bg-hit text-paper" : current ? "ring-2 ring-hit" : "bg-ink/5 text-faint"
-                }`}
-              >
-                {v.doneAt && !v.skipped ? "✓" : i + 1}
-              </span>
+            <li key={x.id} className="flex min-h-14 items-center gap-3 py-2">
+              <StopPin n={i + 1} state={pinState(v, current)} tick />
               <div className="min-w-0 flex-1">
                 <p className={`truncate font-medium ${v.skipped ? "text-faint line-through" : ""}`}>{x.name}</p>
                 <p className="text-xs text-faint">
@@ -296,10 +308,10 @@ function MyStops({ room, token, person }: { room: RoomView; token: string; perso
               </div>
               {v.photo && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={v.photo} alt={`Your glass at ${x.name}`} className="size-11 rounded-md object-cover" />
+                <img src={v.photo} alt={`Your glass at ${x.name}`} className="size-10 rounded-lg object-cover" />
               )}
               {v.doneAt && (
-                <button onClick={() => act(room, token, null, { type: "undo", stopId: x.id })} className="text-xs text-faint underline underline-offset-4 hover:text-ink">
+                <button onClick={() => act(room, token, null, { type: "undo", stopId: x.id })} className="h-9 px-2 text-xs text-faint underline underline-offset-4 transition-colors hover:text-ink">
                   Undo
                 </button>
               )}
@@ -317,11 +329,14 @@ function StopList({ room }: { room: RoomView }) {
   return (
     <section className="mt-8">
       <h3 className="text-sm font-medium text-faint">Tonight&rsquo;s route</h3>
-      <ol className="mt-2 space-y-1.5">
+      <ol className="mt-3 space-y-3">
         {g.stops.map((x, i) => (
-          <li key={x.id} className="flex items-baseline gap-3">
-            <span className="font-mono text-sm text-faint">{i + 1}</span>
-            <span className="font-hand text-3xl">{x.name}</span>
+          <li key={x.id} className="flex items-center gap-3">
+            <StopPin n={i + 1} />
+            <span className="min-w-0">
+              <span className="block font-hand text-3xl leading-none">{x.name}</span>
+              {x.address && <span className="block truncate text-xs text-faint">{x.address}</span>}
+            </span>
           </li>
         ))}
       </ol>
@@ -338,7 +353,7 @@ function WhereIsEveryone({ room, big = false }: { room: RoomView; big?: boolean 
   return (
     <section>
       <h3 className={`font-medium text-faint ${big ? "text-lg" : "text-sm"}`}>Where everyone is</h3>
-      <ul className={`mt-2 ${big ? "space-y-4" : "space-y-2.5"}`}>
+      <ul className={`mt-3 ${big ? "space-y-5" : "space-y-4"}`}>
         {g.ranking.map((id) => {
           const p = playerOf(room, id);
           const person = g.people.find((x) => x.playerId === id)!;
@@ -348,9 +363,9 @@ function WhereIsEveryone({ room, big = false }: { room: RoomView; big?: boolean 
             <li key={id} className="flex items-center gap-3">
               <Avatar player={p} size={big ? 56 : 36} dim={!p.online} />
               <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className={`truncate font-hand font-bold ${big ? "text-4xl" : "text-2xl"}`}>{p.id === room.me ? "You" : p.name}</span>
-                  <span className={`shrink-0 text-faint ${big ? "text-lg" : "text-xs"}`}>
+                <div className={big ? "flex items-baseline justify-between gap-4" : ""}>
+                  <span className={`block truncate font-hand font-bold leading-none ${big ? "text-4xl" : "text-2xl"}`}>{p.id === room.me ? "You" : p.name}</span>
+                  <span className={`block truncate text-faint ${big ? "shrink-0 text-lg" : "mt-1 text-xs"}`}>
                     {person.currentStop
                       ? `${at?.arrivedAt ? "at" : "heading to"} ${stopName(person.currentStop)}`
                       : person.complete
@@ -360,7 +375,7 @@ function WhereIsEveryone({ room, big = false }: { room: RoomView; big?: boolean 
                     {plural(person.drinks, "drink")}
                   </span>
                 </div>
-                <div className="mt-1">
+                <div className="mt-2">
                   <Progress room={room} person={person} big={big} />
                 </div>
               </div>
@@ -413,10 +428,10 @@ function Photo({ room, shot, big = false, hostToken }: { room: RoomView; shot: S
       {room.isHost && hostToken !== undefined && (
         <button
           onClick={() => confirm("Take this photo down?") && act(room, null, hostToken, { type: "removePhoto", playerId: shot.playerId, stopId: shot.stopId })}
-          className="absolute right-1 top-1 rounded-full bg-paper/90 px-2 text-xs text-miss"
+          className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-paper/90 text-miss transition-colors hover:bg-paper"
           aria-label="Remove photo"
         >
-          ×
+          <CloseIcon size={14} />
         </button>
       )}
     </figure>
@@ -454,7 +469,7 @@ export function StopsEditor({ room, hostToken }: { room: RoomView; hostToken: st
     <div className="space-y-2">
       <p className="text-sm font-medium">Stops {g.stops.length > 0 && <span className="text-faint">({g.stops.length})</span>}</p>
       <StopListEditor
-        stops={g.stops.map((x) => ({ key: x.id, name: x.name, address: x.address, pinned: x.pinned }))}
+        stops={g.stops.map((x) => ({ key: x.id, name: x.name, address: x.address, pinned: x.pinned, spot: x.spot }))}
         near={near}
         onFocusNear={wantNear}
         onAdd={(p) => send({ type: "addStop", ...place(p) })}
@@ -479,7 +494,7 @@ function mapStops(g: PubGameView, person?: Person | null): MapStop[] {
       n: i + 1,
       name: x.name,
       spot: x.spot,
-      state: !person ? "todo" : v?.skipped ? "skipped" : v?.doneAt ? "done" : person.currentStop === x.id ? "current" : "todo",
+      state: person ? pinState(v, person.currentStop === x.id) : "todo",
     };
   });
 }
@@ -496,23 +511,26 @@ function CrawlMap({ room, person, big = false }: { room: RoomView; person?: Pers
     <section>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className={`font-medium text-faint ${big ? "text-2xl" : "text-sm"}`}>The route</h3>
-        <p className={`text-faint ${big ? "text-xl" : "text-xs"}`}>
-          {route && (
-            <>
-              {formatKm(route.km)} walk · about {route.minutes} min on foot
-            </>
-          )}
-          {route && link && !big && " · "}
-          {link && !big && (
-            <a href={link} target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">
-              Open in Google Maps
-            </a>
-          )}
-        </p>
+        {route && (
+          <p className={`font-mono tabular-nums text-faint ${big ? "text-xl" : "text-xs"}`}>
+            {formatKm(route.km)} · {route.minutes} min walk
+          </p>
+        )}
       </div>
       <div className="mt-2">
-        <RouteMap stops={stops} className={big ? "h-[55vh]" : "h-64"} labels={big} />
+        <RouteMap stops={stops} className={big ? "h-[55vh]" : "h-72"} labels={big} />
       </div>
+      {link && !big && (
+        <a
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-flex h-9 items-center gap-2 text-sm font-medium underline-offset-4 transition-colors hover:underline"
+        >
+          <ExternalIcon className="text-faint" />
+          Open the route in Google Maps
+        </a>
+      )}
       {spots.length < g.stops.length && (
         <p className={`mt-1 text-faint ${big ? "text-lg" : "text-xs"}`}>
           {g.stops.length - spots.length} {g.stops.length - spots.length === 1 ? "stop isn't" : "stops aren't"} on the map yet
@@ -546,10 +564,10 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
     <div className={`pop ${big ? "space-y-14" : "space-y-10"}`}>
       <header>
         <h2 className={`font-hand font-bold leading-none ${big ? "text-9xl" : "text-6xl"}`}>That&rsquo;s the crawl</h2>
-        <dl className={`mt-6 grid gap-3 ${big ? "grid-cols-5" : "grid-cols-2 sm:grid-cols-3"}`}>
-          {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-ink/5 p-4">
-              <dd className={`font-mono font-bold tabular-nums ${big ? "text-6xl" : "text-3xl"}`}>{s.value}</dd>
+        <dl className={`mt-6 grid gap-3 ${big ? "grid-cols-5" : "grid-cols-2"}`}>
+          {stats.map((s, i) => (
+            <div key={s.label} className={`rounded-2xl bg-ink/5 p-4 ${!big && i === stats.length - 1 && stats.length % 2 ? "col-span-2" : ""}`}>
+              <dd className={`font-mono font-medium tabular-nums ${big ? "text-6xl" : "text-3xl"}`}>{s.value}</dd>
               <dt className={`text-faint ${big ? "text-xl" : "text-sm"}`}>{s.label}</dt>
             </div>
           ))}
@@ -599,9 +617,9 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
                 <th className="py-2 pr-3 font-normal">#</th>
                 <th className="py-2 pr-3 font-normal">Name</th>
                 <th className="py-2 pr-3 text-right font-normal">Stops</th>
-                <th className="py-2 pr-3 text-right font-normal">Photos</th>
+                <th className="hidden py-2 pr-3 text-right font-normal sm:table-cell">Photos</th>
                 <th className="py-2 pr-3 text-right font-normal">Drinks</th>
-                <th className="py-2 pr-3 text-right font-normal">Walked</th>
+                <th className="hidden py-2 pr-3 text-right font-normal sm:table-cell">Walked</th>
                 <th className="py-2 text-right font-normal">Finished</th>
               </tr>
             </thead>
@@ -620,9 +638,9 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
                     <td className="py-2 pr-3 text-right font-mono tabular-nums">
                       {p.visited}/{g.stops.length}
                     </td>
-                    <td className="py-2 pr-3 text-right font-mono tabular-nums">{p.photos}</td>
+                    <td className="hidden py-2 pr-3 text-right font-mono tabular-nums sm:table-cell">{p.photos}</td>
                     <td className="py-2 pr-3 text-right font-mono tabular-nums">{p.drinks}</td>
-                    <td className="py-2 pr-3 text-right font-mono tabular-nums">{p.km > 0 ? formatKm(p.km) : "—"}</td>
+                    <td className="hidden py-2 pr-3 text-right font-mono tabular-nums sm:table-cell">{p.km > 0 ? formatKm(p.km) : "—"}</td>
                     <td className="py-2 text-right font-mono tabular-nums">{p.complete && p.finishedAt ? clockTime(p.finishedAt) : "—"}</td>
                   </tr>
                 );
@@ -638,8 +656,8 @@ export function Results({ room, hostToken, big = false }: { room: RoomView; host
           const stopShots = shots.filter((s) => s.stopId === x.id);
           return (
             <article key={x.id}>
-              <div className="flex items-baseline gap-3">
-                <span className={`font-mono text-faint ${big ? "text-2xl" : "text-sm"}`}>{i + 1}</span>
+              <div className="flex items-center gap-3">
+                <StopPin n={i + 1} size={big ? 40 : 28} />
                 <h4 className={`font-hand font-bold leading-none ${big ? "text-6xl" : "text-4xl"}`}>{x.name}</h4>
               </div>
               <p className={`mt-1 text-faint ${big ? "text-xl" : "text-sm"}`}>
@@ -777,11 +795,11 @@ export function PubTv({ room, hostToken }: { room: RoomView; hostToken: string |
         <div>
           <h3 className="text-lg text-faint">Tonight&rsquo;s route</h3>
           {g.stops.length ? (
-            <ol className="mt-3 space-y-2">
+            <ol className="mt-4 space-y-4">
               {g.stops.map((x, i) => (
-                <li key={x.id} className="flex items-baseline gap-4">
-                  <span className="font-mono text-xl text-faint">{i + 1}</span>
-                  <span className="font-hand text-5xl">{x.name}</span>
+                <li key={x.id} className="flex items-center gap-4">
+                  <StopPin n={i + 1} size={36} />
+                  <span className="font-hand text-5xl leading-none">{x.name}</span>
                 </li>
               ))}
             </ol>
@@ -819,8 +837,8 @@ export function PubTv({ room, hostToken }: { room: RoomView; hostToken: string |
           <ol className="mt-3 space-y-3">
             {g.stops.map((x, i) => (
               <li key={x.id} className="flex items-center gap-4">
-                <span className="font-mono text-lg text-faint">{i + 1}</span>
-                <span className="min-w-0 flex-1 truncate font-hand text-4xl">{x.name}</span>
+                <StopPin n={i + 1} size={32} state={x.arrivals.length === g.people.length && g.people.length ? "done" : "todo"} />
+                <span className="min-w-0 flex-1 truncate font-hand text-4xl leading-none">{x.name}</span>
                 <span className="flex -space-x-3">
                   {x.arrivals.slice(0, 5).map((id) => {
                     const p = playerOf(room, id);

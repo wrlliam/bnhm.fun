@@ -63,7 +63,7 @@ export function RouteMap({
   if (!placed.length) {
     return (
       <div className={`flex items-center justify-center rounded-2xl bg-ink/5 p-6 text-center text-sm text-faint ${className}`}>
-        Pick places for the stops to see them on the map
+        Stops appear on the map as you add them
       </div>
     );
   }
@@ -117,7 +117,7 @@ function LeafletMap({ stops, className, label, labels }: { stops: MapStop[]; cla
         className: "",
         iconSize: [30, 30],
         iconAnchor: [15, 15],
-        html: `<span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:2px solid #fff;font:700 13px/1 system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35);${PIN_STYLE[s.state ?? "todo"]}">${s.n}</span>`,
+        html: `<span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:2px solid #fff;font:500 12px/1 var(--font-geist-mono),ui-monospace,monospace;box-shadow:0 1px 4px rgba(0,0,0,.35);${PIN_STYLE[s.state ?? "todo"]}">${s.n}</span>`,
       });
       // names come from the host: set as text, never as HTML
       const tip = document.createElement("span");

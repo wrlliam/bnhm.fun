@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Baloo_2, Caveat, Fredoka, Geist, Geist_Mono, Gochi_Hand, Pacifico, VT323 } from "next/font/google";
 import { BRAND, SITE_URL } from "@/lib/brand";
 import { KeepAwake } from "@/components/keep-awake";
+import { SeasonalLayer } from "@/components/seasonal";
 import { SettingsPanel } from "@/components/settings-panel";
 import { SETTINGS_SCRIPT } from "@/lib/settings-shared";
 import { THEME_SCRIPT } from "@/lib/themes";
@@ -105,6 +106,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col font-sans">
         {children}
+        <SeasonalLayer />
         <SettingsPanel />
         <KeepAwake />
       </body>

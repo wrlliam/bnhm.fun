@@ -345,3 +345,20 @@ html[data-motion="off"] *::after {
   100% { transform: scale(1); }
 }
 .cheer { animation: cheer 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* ---- seasonal: Halloween bats (components/seasonal.tsx) ---- */
+@keyframes season-bat {
+  0% { transform: translate(0, 0); opacity: 0; }
+  4% { opacity: 0.85; }
+  25% { transform: translate(30vw, -3vh); }
+  50% { transform: translate(60vw, 4vh); }
+  75% { transform: translate(90vw, -2vh); }
+  96% { opacity: 0.85; }
+  100% { transform: translate(115vw, 2vh); opacity: 0; }
+}
+@keyframes season-flap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.45); }
+}
+.season-bat { animation: season-bat 20s linear infinite both; will-change: transform; }
+.season-bat-wings { animation: season-flap 0.32s ease-in-out infinite; transform-origin: 50% 40%; }
