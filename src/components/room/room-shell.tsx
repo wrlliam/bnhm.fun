@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { type RoomView, roomAction, saveToken, type StreamStatus } from "@/lib/rooms/client";
+import { type RoomView, roomAction, type StreamStatus } from "@/lib/rooms/client";
 import { AdminAccess } from "./admin-access";
 import { GameSwitcher, WhatsNext } from "./game-switcher";
 import { JoinQr } from "./join-qr";
@@ -12,6 +11,7 @@ import { Recap } from "./recap";
 import { Avatar } from "./avatar";
 import { JoinForm } from "./join-form";
 import { PlayerList } from "./player-list";
+import { RoomNav } from "./room-nav";
 
 export function openTv(code: string) {
   window.open(`/tv/${code}`, `tv-${code}`, "popup,width=1280,height=760");
@@ -41,7 +41,6 @@ export function RoomShell({
   /** Extra items for the menu drawer (e.g. host settings). */
   menu?: React.ReactNode;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,6 +48,7 @@ export function RoomShell({
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-5 py-5 sm:pl-20">
+      <RoomNav code={room.code} kind={room.kind} token={token} />
       <header className="flex items-center gap-3">
         {me && <Avatar player={me} size={36} />}
         <div className="min-w-0 flex-1">
@@ -143,17 +143,6 @@ export function RoomShell({
             {editing && (
               <JoinForm code={room.code} token={token} title="Your profile" submitLabel="Save" onDone={() => setEditing(false)} />
             )}
-            <button
-              onClick={async () => {
-                if (!confirm("Leave this room?")) return;
-                await roomAction(room.code, { type: "leave", token });
-                saveToken(room.code, null);
-                router.push("/");
-              }}
-              className="text-miss underline underline-offset-4"
-            >
-              Leave room
-            </button>
           </div>
         </div>
       )}

@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { BackIcon } from "@/components/icons";
 import { useState } from "react";
 import { AdminLogin } from "@/components/room/admin-access";
 import { JoinQr } from "@/components/room/join-qr";
@@ -44,10 +46,16 @@ export function TvClient() {
   return (
     <main className="flex min-h-screen flex-col px-10 py-8 pl-24">
       <header className="mb-8 flex items-start justify-between gap-6">
-        <div className="flex -space-x-3">
-          {room.players.map((p) => (
-            <Avatar key={p.id} player={p} size={48} dim={!p.online} ring="ring-paper" />
-          ))}
+        <div>
+          <Link href="/" className="mb-3 inline-flex items-center gap-1 text-sm text-faint transition-colors hover:text-ink">
+            <BackIcon />
+            All games
+          </Link>
+          <div className="flex -space-x-3">
+            {room.players.map((p) => (
+              <Avatar key={p.id} player={p} size={48} dim={!p.online} ring="ring-paper" />
+            ))}
+          </div>
         </div>
         <div className="text-right">
           <p className="text-lg text-faint">

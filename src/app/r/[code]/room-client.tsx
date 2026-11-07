@@ -6,6 +6,7 @@ import { Avatar } from "@/components/room/avatar";
 import { DrinkAlert } from "@/components/room/drink-alert";
 import { JoinForm } from "@/components/room/join-form";
 import { RejoinForm } from "@/components/room/rejoin";
+import { RoomNav } from "@/components/room/room-nav";
 import { Centered, RoomShell } from "@/components/room/room-shell";
 import { BluffPlayer } from "@/games/bluff/views";
 import { HangmanPlayer } from "@/games/hangman/player";
@@ -49,15 +50,19 @@ export function RoomClient() {
   // not in the room yet (or removed by the host): show the join form
   if (!token || !room.me || status === "gone") {
     return (
-      <Centered>
-        {status === "gone" && <p className="mb-6 text-sm text-miss">You were removed from the room. You can join again.</p>}
-        <JoinForm
-          code={code}
-          hostToken={host}
-          title={
-            <>
-              Join {room.title}
-              <span className="ml-3 font-mono text-3xl tracking-widest">{code}</span>
+      <>
+        <div className="mx-auto w-full max-w-xl px-5 pt-5 sm:pl-20">
+          <RoomNav code={code} kind={room.kind} />
+        </div>
+        <Centered>
+          {status === "gone" && <p className="mb-6 text-sm text-miss">You were removed from the room. You can join again.</p>}
+          <JoinForm
+            code={code}
+            hostToken={host}
+            title={
+              <>
+                Join {room.title}
+                <span className="ml-3 font-mono text-3xl tracking-widest">{code}</span>
             </>
           }
         />
@@ -76,6 +81,7 @@ export function RoomClient() {
           </div>
         )}
       </Centered>
+      </>
     );
   }
 

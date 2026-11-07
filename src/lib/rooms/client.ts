@@ -47,8 +47,27 @@ export function saveToken(code: string, token: string | null) {
   } else {
     sessionStorage.removeItem(tokenKey(code));
     localStorage.removeItem(tokenKey(code));
+    if (lastRoom() === code) rememberRoom(null);
   }
   notify();
+}
+
+const LAST_ROOM_KEY = "lastRoom";
+
+/** The room this device was last in, so the site nav can offer a way back. */
+export function lastRoom(): string | null {
+  try {
+    return localStorage.getItem(LAST_ROOM_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function rememberRoom(code: string | null) {
+  try {
+    if (code) localStorage.setItem(LAST_ROOM_KEY, code);
+    else localStorage.removeItem(LAST_ROOM_KEY);
+  } catch {}
 }
 
 export function saveHostToken(code: string, hostToken: string) {
