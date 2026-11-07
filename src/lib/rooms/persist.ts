@@ -71,8 +71,43 @@ export function saveSoon(room: Room) {
 }
 
 export async function forget(code: string) {
+  dropPhotos(code);
   const client = await redis();
   await client?.del(KEY(code)).catch(() => {});
+}
+
+// ---- photos ---------------------------------------------------------------
+// Pub crawl proof photos are big, so they live outside the room (which is
+// broadcast and saved on every change) and are fetched by id instead.
+
+const g2 = globalThis as unknown as { __photos?: Map<string, string> };
+const photos = (g2.__photos ??= new Map<string, string>());
+const PHOTO_KEY = (code: string, id: string) => `bnhm:photo:${code}:${id}`;
+
+export function putPhoto(code: string, id: string, dataUrl: string) {
+  photos.set(`${code}:${id}`, dataUrl);
+  void redis().then((client) =>
+    client?.set(PHOTO_KEY(code, id), dataUrl, { EX: ROOM_TTL_SECONDS * 2 }).catch((e) => console.error("[redis] photo save failed", (e as Error).message)),
+  );
+}
+
+export async function getPhoto(code: string, id: string): Promise<string | null> {
+  const hit = photos.get(`${code}:${id}`);
+  if (hit) return hit;
+  const client = await redis();
+  const saved = (await client?.get(PHOTO_KEY(code, id)).catch(() => null)) ?? null;
+  if (saved) photos.set(`${code}:${id}`, saved);
+  return saved;
+}
+
+export function deletePhoto(code: string, id: string) {
+  photos.delete(`${code}:${id}`);
+  void redis().then((client) => client?.del(PHOTO_KEY(code, id)).catch(() => {}));
+}
+
+/** Forget every photo for a room (memory only; Redis copies expire on their own). */
+export function dropPhotos(code: string) {
+  for (const k of photos.keys()) if (k.startsWith(`${code}:`)) photos.delete(k);
 }
 
 /**

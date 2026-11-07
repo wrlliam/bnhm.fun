@@ -22,7 +22,7 @@ import {
 } from "./core";
 import { track } from "@/lib/analytics";
 import { MAX_ROOMS } from "./limits";
-import { roomsReady } from "./persist";
+import { getPhoto, roomsReady } from "./persist";
 import { GAMES, isGameKind } from "./registry";
 
 /** Await before handling any room request: loads saved rooms from Redis once per process. */
@@ -168,6 +168,16 @@ export function avatarFor(code: string, playerId: string) {
   if (!p?.avatar) throw new GameError("No avatar", 404);
   const [meta, data] = p.avatar.split(",");
   return { type: meta.slice(5, meta.indexOf(";")), bytes: Buffer.from(data, "base64") };
+}
+
+/** A pub crawl proof photo, by its (unguessable) id. */
+export async function photoFor(code: string, photoId: string) {
+  const room = getRoom(code);
+  if (!/^[0-9a-f]{16}$/.test(photoId)) throw new GameError("No photo", 404);
+  const data = await getPhoto(room.code, photoId);
+  if (!data) throw new GameError("No photo", 404);
+  const [meta, b64] = data.split(",");
+  return { type: meta.slice(5, meta.indexOf(";")), bytes: Buffer.from(b64, "base64") };
 }
 
 export function errorResponse(e: unknown) {

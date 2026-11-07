@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Emblem } from "@/components/emblem";
 import { SiteNav } from "@/components/site-nav";
 import { defaultOptions, gameMeta } from "@/lib/catalog";
+import { parseStops } from "@/lib/pub-crawl";
 import { createRoom } from "@/lib/rooms/client";
 
 /** Pick a game → read the three steps → set options → start the room. */
@@ -58,7 +59,9 @@ export function NewRoom({ kind }: { kind: string }) {
       {meta.options && (
         <section className="mt-8 space-y-6">
           {meta.options.map((o) =>
-            o.type === "choice" ? (
+            o.type === "list" ? (
+              <ListOption key={o.key} label={o.label} hint={o.hint} placeholder={o.placeholder} onChange={(items) => setOpts((x) => ({ ...x, [o.key]: items }))} />
+            ) : o.type === "choice" ? (
               <div key={o.key}>
                 <p className="font-medium">{o.label}</p>
                 {o.hint && <p className="text-sm text-faint">{o.hint}</p>}
@@ -124,5 +127,33 @@ export function NewRoom({ kind }: { kind: string }) {
       </p>
       {error && <p className="pop mt-3 text-sm text-miss">{error}</p>}
     </main>
+  );
+}
+
+/** Free-text list, one item per line. */
+function ListOption({ label, hint, placeholder, onChange }: { label: string; hint?: string; placeholder?: string; onChange: (items: string[]) => void }) {
+  const [text, setText] = useState("");
+  const items = parseStops(text);
+  return (
+    <div>
+      <label htmlFor="list-option" className="font-medium">
+        {label}
+      </label>
+      {hint && <p className="text-sm text-faint">{hint}</p>}
+      <textarea
+        id="list-option"
+        value={text}
+        rows={6}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setText(e.target.value);
+          onChange(parseStops(e.target.value));
+        }}
+        className="mt-2 w-full rounded-xl border border-ink/15 bg-paper p-3 leading-relaxed outline-none placeholder:text-faint/60 focus:border-ink"
+      />
+      <p className="text-xs text-faint">
+        {items.length ? `${items.length} ${items.length === 1 ? "stop" : "stops"}` : "You can also add stops once the room is open"}
+      </p>
+    </div>
   );
 }

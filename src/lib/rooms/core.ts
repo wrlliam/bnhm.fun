@@ -21,7 +21,8 @@ export type GameKind =
   | "spotlight"
   | "punchline"
   | "bluff"
-  | "odd-one-out";
+  | "odd-one-out"
+  | "pub-crawl";
 
 export type Player = {
   id: string; // public: safe to show to other players

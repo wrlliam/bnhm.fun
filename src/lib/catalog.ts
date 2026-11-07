@@ -8,7 +8,9 @@ export type Suit = "♥" | "♦" | "♠" | "♣";
 
 export type GameOption =
   | { key: string; type: "choice"; label: string; hint?: string; choices: { value: string; label: string; hint?: string }[]; default: string }
-  | { key: string; type: "toggle"; label: string; hint?: string; default: boolean };
+  | { key: string; type: "toggle"; label: string; hint?: string; default: boolean }
+  /** One item per line (sent as a string array). */
+  | { key: string; type: "list"; label: string; hint?: string; placeholder?: string; default: string[] };
 
 export type GameMeta = {
   kind: string;
@@ -187,6 +189,31 @@ export const GAMES_CATALOG: GameMeta[] = [
           { value: "4", label: "4 or fewer" },
         ],
         default: "0",
+      },
+    ],
+  },
+  {
+    kind: "pub-crawl",
+    name: "Pub Crawl",
+    tagline: "List the stops, check in at each one, and prove it with an empty glass",
+    steps: [
+      "The host lists the pubs in order (you can change them as you go)",
+      "At each stop tap “I'm here”, then snap your empty glass to tick it off",
+      "Count your drinks as you go. At the end: who finished first, how far you walked, and every photo",
+    ],
+    category: "drinking",
+    emblem: { rank: "A", suit: "♦" },
+    players: "1–16",
+    minPlayers: 1,
+    time: "All night",
+    options: [
+      {
+        key: "stops",
+        type: "list",
+        label: "Stops",
+        hint: "One per line, in order. Add a street or town so map links find the right place",
+        placeholder: "The Red Lion, High St\nThe Crown\nThe Kings Arms",
+        default: [],
       },
     ],
   },

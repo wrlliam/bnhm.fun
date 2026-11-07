@@ -223,6 +223,35 @@ export async function fileToAvatar(file: File): Promise<string> {
   }
 }
 
+/** A proof photo: longest side ~900px, JPEG, squeezed under the server's size limit. */
+export async function fileToPhoto(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("Couldn't read that photo"));
+      i.src = url;
+    });
+    for (const [side, quality] of [
+      [900, 0.72],
+      [720, 0.65],
+      [560, 0.6],
+    ] as const) {
+      const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL("image/jpeg", quality);
+      if (data.length < 185_000) return data;
+    }
+    throw new Error("That photo is too big — try another");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 // ---- admin access ---------------------------------------------------------
 
 /** Trade the admin password for host access on this device. */

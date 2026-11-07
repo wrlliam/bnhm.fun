@@ -10,6 +10,7 @@ import { bluff } from "./games/bluff";
 import { oddOneOut } from "./games/odd-one-out";
 import { punchline } from "./games/punchline";
 import { spotlight } from "./games/spotlight";
+import { pubCrawl } from "./games/pub-crawl";
 
 export const GAMES: Record<GameKind, GameModule<unknown>> = {
   hangman: hangman as GameModule<unknown>,
@@ -23,6 +24,7 @@ export const GAMES: Record<GameKind, GameModule<unknown>> = {
   punchline: punchline as GameModule<unknown>,
   bluff: bluff as GameModule<unknown>,
   "odd-one-out": oddOneOut as GameModule<unknown>,
+  "pub-crawl": pubCrawl as GameModule<unknown>,
 };
 
 export function isGameKind(k: unknown): k is GameKind {
@@ -40,3 +42,4 @@ export type { BluffView as BluffGameView } from "./games/bluff";
 export type { OddView as OddGameView } from "./games/odd-one-out";
 export type { PunchView as PunchGameView } from "./games/punchline";
 export type { SpotView as SpotGameView } from "./games/spotlight";
+export type { PubView as PubGameView } from "./games/pub-crawl";

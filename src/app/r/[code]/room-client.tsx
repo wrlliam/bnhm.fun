@@ -18,6 +18,7 @@ import { TriviaPlayer } from "@/games/trivia/views";
 import { TodPlayer } from "@/games/truth-or-drink/views";
 import { MltPlayer } from "@/games/most-likely-to/player";
 import { RofPlayer } from "@/games/ring-of-fire/player";
+import { PubPlayer } from "@/games/pub-crawl/views";
 import { useRoomStream, useRoomTokens } from "@/lib/rooms/client";
 
 export function RoomClient() {
@@ -91,6 +92,7 @@ export function RoomClient() {
       {room.kind === "punchline" && <PunchPlayer {...props} status={status} />}
       {room.kind === "bluff" && <BluffPlayer {...props} status={status} />}
       {room.kind === "odd-one-out" && <OddPlayer {...props} status={status} />}
+      {room.kind === "pub-crawl" && <PubPlayer {...props} status={status} />}
       {room.kind === "hangman" && (
         <RoomShell room={room} status={status} token={token} hostToken={host}>
           <HangmanPlayer {...props} />

@@ -19,6 +19,7 @@ import { TodTv } from "@/games/truth-or-drink/views";
 import { TvStartBar } from "./tv-start-bar";
 import { MltTv } from "@/games/most-likely-to/tv";
 import { RofTv } from "@/games/ring-of-fire/tv";
+import { PubTv } from "@/games/pub-crawl/views";
 import { useRoomStream, useRoomTokens } from "@/lib/rooms/client";
 
 /**
@@ -89,6 +90,7 @@ export function TvClient() {
       {room.kind === "punchline" && <PunchTv room={room} />}
       {room.kind === "bluff" && <BluffTv room={room} />}
       {room.kind === "odd-one-out" && <OddTv room={room} />}
+      {room.kind === "pub-crawl" && <PubTv {...props} />}
       {room.isHost && <TvStartBar room={room} />}
       {room.kind === "hangman" && <HangmanTv {...props} />}
     </main>

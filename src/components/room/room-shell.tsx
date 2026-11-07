@@ -160,7 +160,8 @@ export function RoomShell({
 
       <section className="mt-6">{children}</section>
 
-      {(room.game as { status?: string }).status === "finished" && (
+      {/* a finished pub crawl keeps its results up; "Play again" would wipe them */}
+      {(room.game as { status?: string }).status === "finished" && room.kind !== "pub-crawl" && (
         <div className="mt-8">
           <WhatsNext room={room} />
         </div>

@@ -324,6 +324,35 @@ export const GUIDES: Guide[] = [
     rules: [{ title: "Payout", text: "Backers of the winning suit hand out double their bet. Everyone else drinks what they bet." }],
   },
   {
+    slug: "pub-crawl",
+    name: "Pub Crawl",
+    tagline: "List the stops, check in at each one, and prove it with an empty glass",
+    players: "1–16",
+    time: "All night",
+    drinking: true,
+    modes: [{ label: "Start a crawl", href: "/new/pub-crawl", room: true }],
+    overview:
+      "A pub crawl with a scoreboard. The host lists the stops, everyone joins on their phone and makes their own way round. Check in at each stop, post a photo of your empty glass, and count your drinks. At the end you get the finish order, roughly how far you walked, awards and every photo.",
+    setup: [
+      "Start a Pub Crawl room and type the stops in order, one per line. Adding the street or town helps the Directions links find the right place.",
+      "Share the code or QR. The host can add, rename, reorder or remove stops at any time from the lobby or the menu.",
+      "Optional: open the TV screen on a laptop or a phone propped up at the first pub to show the live board.",
+    ],
+    howToPlay: [
+      "Your phone shows your next stop with a Directions link.",
+      "When you get there, tap “I'm here”. If you allow location, your phone's position is used to place the stop and work out the distance. Nobody sees where you are, only the stops.",
+      "Finish your drink and tap “Snap your empty glass”. The photo ticks the stop off and moves you on. No photo? Tap “Move on without a photo”.",
+      "Use the + and − buttons to count every drink at each stop.",
+      "Can't make a stop? Skip it. You won't count as finishing every stop, though.",
+      "The crawl ends when everyone has ticked off every stop, or when the host ends it. Then the results show on every phone and the TV.",
+    ],
+    rules: [
+      { title: "Winning", text: "The winner is the first person to check in at every stop and tick it off. Skipped stops don't count." },
+      { title: "Distance", text: "Distance is a rough walking estimate: straight lines between where phones checked in at each stop, plus a bit for the streets." },
+    ],
+    tips: ["Pace yourself and drink water between stops.", "Agree a meeting point in case anyone's phone dies."],
+  },
+  {
     slug: "never-have-i-ever",
     name: "Never Have I Ever",
     tagline: "Read the card. If you've done it, you drink",
